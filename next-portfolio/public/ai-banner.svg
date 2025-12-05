@@ -1,0 +1,77 @@
+<svg viewBox="0 0 1200 400" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6366f1;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#a855f7;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#d946ef;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="accentGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6366f1;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#a855f7;stop-opacity:0.8" />
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1200" height="400" fill="url(#bgGradient)"/>
+  
+  <!-- Abstract tech patterns -->
+  <!-- Left side neural network nodes -->
+  <circle cx="80" cy="60" r="6" fill="#6366f1" opacity="0.7" filter="url(#glow)"/>
+  <circle cx="120" cy="120" r="8" fill="#a855f7" opacity="0.6" filter="url(#glow)"/>
+  <circle cx="100" cy="180" r="5" fill="#6366f1" opacity="0.5"/>
+  <circle cx="150" cy="240" r="7" fill="#a855f7" opacity="0.6" filter="url(#glow)"/>
+  <circle cx="90" cy="300" r="6" fill="#6366f1" opacity="0.5"/>
+  
+  <!-- Connection lines for neural network -->
+  <line x1="80" y1="60" x2="120" y2="120" stroke="#6366f1" stroke-width="1" opacity="0.4"/>
+  <line x1="120" y1="120" x2="100" y2="180" stroke="#a855f7" stroke-width="1" opacity="0.4"/>
+  <line x1="100" y1="180" x2="150" y2="240" stroke="#6366f1" stroke-width="1" opacity="0.4"/>
+  <line x1="150" y1="240" x2="90" y2="300" stroke="#a855f7" stroke-width="1" opacity="0.4"/>
+  
+  <!-- Right side data flow circles -->
+  <circle cx="1100" cy="80" r="7" fill="#6366f1" opacity="0.6" filter="url(#glow)"/>
+  <circle cx="1050" cy="150" r="9" fill="#a855f7" opacity="0.7" filter="url(#glow)"/>
+  <circle cx="1120" cy="220" r="6" fill="#6366f1" opacity="0.5"/>
+  <circle cx="1070" cy="280" r="8" fill="#a855f7" opacity="0.6" filter="url(#glow)"/>
+  <circle cx="1140" cy="340" r="7" fill="#6366f1" opacity="0.5"/>
+  
+  <!-- Connection lines on right -->
+  <line x1="1100" y1="80" x2="1050" y2="150" stroke="#a855f7" stroke-width="1" opacity="0.4"/>
+  <line x1="1050" y1="150" x2="1120" y2="220" stroke="#6366f1" stroke-width="1" opacity="0.4"/>
+  <line x1="1120" y1="220" x2="1070" y2="280" stroke="#a855f7" stroke-width="1" opacity="0.4"/>
+  <line x1="1070" y1="280" x2="1140" y2="340" stroke="#6366f1" stroke-width="1" opacity="0.4"/>
+  
+  <!-- Center accent shape - AI chip/processor concept -->
+  <g opacity="0.15" filter="url(#glow)">
+    <rect x="550" y="150" width="100" height="100" fill="none" stroke="url(#accentGradient)" stroke-width="2" rx="8"/>
+    <rect x="570" y="170" width="60" height="60" fill="none" stroke="url(#accentGradient)" stroke-width="1" rx="4"/>
+    <line x1="580" y1="200" x2="620" y2="200" stroke="url(#accentGradient)" stroke-width="1"/>
+    <line x1="600" y1="180" x2="600" y2="220" stroke="url(#accentGradient)" stroke-width="1"/>
+  </g>
+  
+  <!-- Floating tech elements - gradient accents -->
+  <circle cx="300" cy="80" r="20" fill="url(#accentGradient)" opacity="0.08"/>
+  <circle cx="900" cy="320" r="25" fill="url(#accentGradient)" opacity="0.08"/>
+  <circle cx="400" cy="320" r="15" fill="url(#accentGradient)" opacity="0.06"/>
+  
+  <!-- Top accent line -->
+  <line x1="0" y1="0" x2="1200" y2="0" stroke="url(#accentGradient)" stroke-width="2" opacity="0.3"/>
+  
+  <!-- Subtle grid pattern -->
+  <g opacity="0.03" stroke="#a855f7">
+    <line x1="0" y1="50" x2="1200" y2="50" stroke-width="0.5"/>
+    <line x1="0" y1="100" x2="1200" y2="100" stroke-width="0.5"/>
+    <line x1="0" y1="150" x2="1200" y2="150" stroke-width="0.5"/>
+    <line x1="0" y1="200" x2="1200" y2="200" stroke-width="0.5"/>
+    <line x1="0" y1="250" x2="1200" y2="250" stroke-width="0.5"/>
+    <line x1="0" y1="300" x2="1200" y2="300" stroke-width="0.5"/>
+    <line x1="0" y1="350" x2="1200" y2="350" stroke-width="0.5"/>
+  </g>
+</svg>
