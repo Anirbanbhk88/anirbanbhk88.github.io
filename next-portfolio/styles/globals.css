@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Global animation variables */
+:root {
+    --anim-duration: 480ms;
+    --anim-ease: cubic-bezier(.16, .84, .44, 1);
+}
+
 /* Custom small tweaks */
 body {
     @apply bg-gray-50;
@@ -27,4 +33,117 @@ body {
 /* simple shadow for project cards in dark mode */
 .card-shadow {
     box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+}
+
+/* Reveal-on-scroll utilities */
+.reveal {
+    --anim-duration: 480ms;
+    --anim-ease: cubic-bezier(.16, .84, .44, 1);
+    opacity: 0;
+    transform: translateY(12px) scale(0.995);
+    transition-property: opacity, transform;
+    transition-duration: var(--anim-duration);
+    transition-timing-function: var(--anim-ease);
+    will-change: opacity, transform;
+}
+
+.reveal.active {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+/* Stagger helpers (use as additional classes) */
+.delay-75 {
+    transition-delay: 75ms;
+}
+
+.delay-150 {
+    transition-delay: 150ms;
+}
+
+.delay-250 {
+    transition-delay: 250ms;
+}
+
+.delay-350 {
+    transition-delay: 350ms;
+}
+
+/* Subtle float animation for hero halo */
+@keyframes floaty {
+    0% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-6px);
+    }
+
+    100% {
+        transform: translateY(0);
+    }
+}
+
+.floaty {
+    animation: floaty 5s ease-in-out infinite;
+}
+
+/* Project card hover micro-interactions */
+.project-card {
+    transition: transform 300ms var(--anim-ease), box-shadow 300ms var(--anim-ease);
+    will-change: transform, box-shadow;
+}
+
+.project-card:hover {
+    transform: translateY(-6px) scale(1.02);
+    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.18);
+}
+
+/* SVG node animations (pulse) */
+.node {
+    transform-origin: center;
+}
+
+.node-1,
+.node-2,
+.node-4,
+.node-6,
+.node-7,
+.node-9 {
+    animation: pulse 3.2s ease-in-out infinite;
+}
+
+.node-3,
+.node-5,
+.node-8,
+.node-10 {
+    animation: pulse 4.2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 0.7;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 1;
+        transform: scale(1.15);
+    }
+
+    100% {
+        opacity: 0.7;
+        transform: scale(1);
+    }
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+
+    .reveal,
+    .fade-in-up,
+    .floaty {
+        transition: none !important;
+        animation: none !important;
+    }
 }
