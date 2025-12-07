@@ -1,5 +1,5 @@
 # Node modules
-next-portfolio/node_modules/
+node_modules/
 
 # Next.js build outputs
 .next/
