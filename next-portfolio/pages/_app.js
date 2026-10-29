@@ -1,6 +1,23 @@
 import '../styles/globals.css'
 import Head from 'next/head'
 import { useEffect } from 'react'
+import { Inter, Sora } from 'next/font/google'
+
+// Self-hosted at build time (works with `next export`). If the Google Fonts
+// download ever fails in a sandboxed environment, the CSS variables fall back
+// to a system font stack (see --font-* fallbacks in styles/globals.css and
+// tailwind.config.js).
+const inter = Inter({
+    subsets: ['latin'],
+    variable: '--font-inter',
+    display: 'swap',
+})
+
+const sora = Sora({
+    subsets: ['latin'],
+    variable: '--font-display',
+    display: 'swap',
+})
 
 export default function MyApp({ Component, pageProps }) {
     useEffect(() => {
@@ -44,11 +61,11 @@ export default function MyApp({ Component, pageProps }) {
     }, [])
 
     return (
-        <>
+        <div className={`${inter.variable} ${sora.variable} font-sans`}>
             <Head>
                 <meta name="viewport" content="width=device-width, initial-scale=1" />
             </Head>
             <Component {...pageProps} />
-        </>
+        </div>
     )
 }
