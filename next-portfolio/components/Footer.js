@@ -26,7 +26,7 @@ export default function Footer() {
                             Anirban<span className="text-primary-600 dark:text-primary-400">.</span>
                         </p>
                         <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                            ML Engineer &amp; Data Scientist — Hamburg, Germany
+                            AI Engineer — Sankt Augustin, Germany
                         </p>
                     </div>
 

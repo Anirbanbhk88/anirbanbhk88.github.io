@@ -1,26 +1,23 @@
 import SectionHeading from './SectionHeading'
 
+/* TODO: add more projects — append entries below (title, description, image,
+   tag, href). Drop any new images into public/images/. */
 const PROJECTS = [
     {
-        title: 'Project 01',
-        description: 'A demo website featuring modern UI and animations.',
+        title: 'Eye-tracking Saliency Prediction',
+        description:
+            'PyTorch deep-learning model with a VGG16 backbone, fine-tuned for salient-region prediction on images via transfer learning.',
         image: '/images/img-1.jpg',
-        tag: 'Website',
-        href: '#',
+        tag: 'Deep Learning',
+        href: 'https://github.com/Anirbanbhk88/Saliency-Prediction',
     },
     {
-        title: 'Project 02',
-        description: 'ML model deployment and monitoring example.',
+        title: 'Real-Estate House Price Prediction',
+        description:
+            'Linear and decision-tree regression for real-estate price prediction, deployed via a Flask website on Amazon EC2.',
         image: '/images/img-2.jpg',
-        tag: 'ML',
-        href: '#',
-    },
-    {
-        title: 'Project 03',
-        description: 'Mobile app with native features and CI pipelines.',
-        image: '/images/img-3.jpg',
-        tag: 'Mobile',
-        href: '#',
+        tag: 'Data Science',
+        href: 'https://github.com/Anirbanbhk88/Real-Estate-House-price-Prediction',
     },
 ]
 
@@ -34,14 +31,12 @@ export default function Projects() {
                 description="A few things I have built — from web platforms to ML systems."
             />
 
-            <div className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="mt-12 grid gap-8 sm:grid-cols-2">
                 {PROJECTS.map((project, index) => (
                     <article
                         key={project.title}
-                        /* TODO(customize): replace the title, description, image, tag and link
-                           above with your real projects. Drop images into public/images/. */
                         className={`group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-soft transition-all duration-300 hover:-translate-y-1.5 hover:shadow-lift dark:border-slate-800 dark:bg-slate-900 ${
-                            index === 0 ? 'reveal' : index === 1 ? 'reveal delay-150' : 'reveal delay-250'
+                            index === 0 ? 'reveal' : 'reveal delay-150'
                         }`}
                     >
                         <div className="relative h-44 overflow-hidden">

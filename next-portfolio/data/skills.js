@@ -1,50 +1,37 @@
 /**
- * Skills, grouped into cards. Edit or extend groups here; the Skills section
- * renders this list automatically.
+ * Skills, grouped into cards — rebuilt CV-first. Edit or extend groups here;
+ * the Skills section renders this list automatically.
  */
 export const skillGroups = [
     {
-        title: 'Data Science & ML',
-        description: 'From exploration to trained and evaluated models.',
+        title: 'AI & Data',
+        description: 'From data pipelines to trained and evaluated models.',
         skills: [
             'Python',
-            'TensorFlow',
             'PyTorch',
-            'Scikit-Learn',
-            'MLflow',
-            'Matplotlib / Seaborn',
-            'Power BI',
-            'SQL',
-            'Jupyter',
+            'SciKit-Learn',
             'Pandas',
+            'SQL',
+            'Data Pipelines',
+            'Data Preprocessing',
+            'Data Analysis',
         ],
     },
     {
-        title: 'Software Engineering',
-        description: 'Web, backend and mobile — a decade of shipping.',
+        title: 'Engineering',
+        description: 'Shipping robust, production-ready software.',
         skills: [
-            'JavaScript',
-            'React',
-            'Next.js',
-            'Flask',
-            'Django',
-            'Swift',
-            'Kotlin',
-            'HTML5 / CSS',
+            'Docker & CI/CD',
+            'Unit Testing',
+            'Git (Version Control)',
+            'Code Reviews',
+            'Shell Scripting',
+            'App Development',
         ],
     },
     {
-        title: 'Platform, DevOps & Tools',
-        description: 'Keeping models and services production-ready.',
-        skills: [
-            'Docker',
-            'Git',
-            'GitLab CI',
-            'AWS',
-            'Linux / Bash',
-            'SSH',
-            'LaTeX',
-            'Windows / macOS',
-        ],
+        title: 'Languages',
+        description: 'Working proficiency.',
+        skills: ['English (C1)', 'German (B1)'],
     },
 ]

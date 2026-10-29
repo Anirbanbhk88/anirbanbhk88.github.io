@@ -18,13 +18,15 @@ const HIGHLIGHTS = [
 const EDUCATION = [
     {
         title: 'MSc Intelligent Adaptive Systems (IAS)',
-        school: 'University of Hamburg, Germany',
-        body: 'International, research-oriented Master’s programme integrating computer science, robotics and neurocognition. Admission rate: 5% of applicants.',
+        school: 'Universität Hamburg, Germany',
+        period: '10/2019 – 03/2023',
+        body: 'Focus areas: machine learning, neural networks, natural language processing for the web, language technology and computer vision. Final grade: 1.9 — thesis: “Temporal Sensor Fusion for 3D Object Detection in Autonomous Driving”.',
         accent: 'primary',
     },
     {
         title: 'B.E. in Computer Science',
-        school: 'Visvesvaraya Technological University, India',
+        school: 'Visvesvaraya Technological University, Bengaluru, India',
+        period: '2006 – 2010',
         body: 'One of the premier engineering universities in India, with a strong focus on computer science fundamentals and practical engineering skills.',
         accent: 'secondary',
     },
@@ -91,9 +93,14 @@ export default function About() {
                                 ACCENTS[item.accent]
                             }`}
                         >
-                            <h4 className={`font-display text-base font-semibold ${ACCENT_TEXT[item.accent]}`}>
-                                {item.title}
-                            </h4>
+                            <div className="flex items-baseline justify-between gap-x-3 gap-y-1">
+                                <h4 className={`font-display text-base font-semibold ${ACCENT_TEXT[item.accent]}`}>
+                                    {item.title}
+                                </h4>
+                                <span className="shrink-0 text-xs font-medium tabular-nums text-slate-500 dark:text-slate-400">
+                                    {item.period}
+                                </span>
+                            </div>
                             <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{item.school}</p>
                             <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">{item.body}</p>
                         </div>
