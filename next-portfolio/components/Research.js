@@ -13,7 +13,7 @@ export default function Research() {
                 id="research-title"
                 eyebrow="Publications"
                 title="Research & Publications"
-                description="Peer-reviewed work in natural language processing — from hate-speech detection in movie subtitles to sentiment analysis for low-resource languages."
+                description="Selected publications and research in natural language processing, machine learning and autonomous driving."
             />
 
             <ol className="mt-12 space-y-6">
