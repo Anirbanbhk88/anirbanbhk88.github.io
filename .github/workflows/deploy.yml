@@ -10,6 +10,7 @@ permissions:
   contents: read
   pages: write
   id-token: write
+  administration: write
 
 concurrency:
   group: github-pages
@@ -19,6 +20,29 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - name: Enforce Pages build type = workflow (fail loudly)
+        run: |
+          set -e
+          CODE=$(curl -sS -o /tmp/put.json -w "%{http_code}" -X PUT \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/${{ github.repository }}/pages \
+            -d '{"build_type":"workflow"}')
+          echo "PUT /pages -> HTTP $CODE"; cat /tmp/put.json; echo
+          STATE=$(curl -sS -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/${{ github.repository }}/pages)
+          echo "$STATE"
+          BT=$(echo "$STATE" | jq -r '.build_type // "unknown"')
+          {
+            echo "## Pages build_type enforcement"
+            echo ""
+            echo "- PUT /pages HTTP status: \`$CODE\`"
+            echo "- Resulting build_type: \`$BT\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ "$CODE" != "204" ] && [ "$CODE" != "200" ]; then echo "::error::PUT /pages failed (HTTP $CODE)"; exit 1; fi
+          if [ "$BT" != "workflow" ]; then echo "::error::build_type is '$BT', expected 'workflow'"; exit 1; fi
+
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -33,19 +57,6 @@ jobs:
         uses: actions/configure-pages@v5
         with:
           enablement: true
-
-      - name: Force Pages build type to workflow (remove stale branch source)
-        run: |
-          code=$(curl -sS -o /tmp/pages-resp.txt -w "%{http_code}" -X PUT \
-            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            -H "Accept: application/vnd.github+json" \
-            https://api.github.com/repos/${{ github.repository }}/pages \
-            -d '{"build_type":"workflow"}')
-          echo "PUT /pages -> HTTP $code"
-          cat /tmp/pages-resp || true
-          if [ "$code" != "204" ] && [ "$code" != "200" ]; then
-            echo "::warning::Could not force build_type (HTTP $code) — deploy-pages may fail if source is branch-based"
-          fi
 
       - name: Install dependencies
         working-directory: ./next-portfolio
@@ -71,6 +82,18 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      - name: Wait for any racing branch Pages build to finish
+        run: |
+          for i in $(seq 1 15); do
+            BUSY=$(curl -sS -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+              -H "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/${{ github.repository }}/actions/runs?per_page=10" \
+              | jq '[.workflow_runs[] | select(.name=="pages build and deployment" and .head_sha=="${{ github.sha }}" and .status!="completed")] | length')
+            echo "attempt $i: in-flight dynamic builds = $BUSY"
+            [ "$BUSY" = "0" ] && break
+            sleep 12
+          done
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
