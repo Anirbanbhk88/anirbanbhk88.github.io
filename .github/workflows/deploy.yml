@@ -10,7 +10,6 @@ permissions:
   contents: read
   pages: write
   id-token: write
-  administration: write
 
 concurrency:
   group: github-pages
@@ -40,8 +39,14 @@ jobs:
             echo "- PUT /pages HTTP status: \`$CODE\`"
             echo "- Resulting build_type: \`$BT\`"
           } >> "$GITHUB_STEP_SUMMARY"
-          if [ "$CODE" != "204" ] && [ "$CODE" != "200" ]; then echo "::error::PUT /pages failed (HTTP $CODE)"; exit 1; fi
-          if [ "$BT" != "workflow" ]; then echo "::error::build_type is '$BT', expected 'workflow'"; exit 1; fi
+          if [ "$BT" = "workflow" ]; then
+            echo "build_type is workflow — enforcement OK"
+          elif [ "$CODE" = "403" ]; then
+            echo "::error::PUT /pages forbidden (HTTP 403): workflows cannot grant GITHUB_TOKEN 'administration' (parser rejects that permission key). build_type remains '$BT' — deploy job's race-guard keeps our deploy last. One-time manual fix: Settings → Pages → Build and deployment → Source: GitHub Actions."
+          elif [ "$CODE" != "204" ] && [ "$CODE" != "200" ]; then echo "::error::PUT /pages failed (HTTP $CODE)"; exit 1; fi
+          if [ "$CODE" = "204" ] || [ "$CODE" = "200" ]; then
+            if [ "$BT" != "workflow" ]; then echo "::error::build_type is '$BT', expected 'workflow'"; exit 1; fi
+          fi
 
       - name: Checkout
         uses: actions/checkout@v4
