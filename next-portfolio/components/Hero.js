@@ -65,7 +65,7 @@ export default function Hero() {
                             alt="Portrait of Anirban Bhowmick"
                             width="144"
                             height="144"
-                            className="relative h-36 w-36 rounded-full object-cover object-center shadow-xl ring-4 ring-white dark:ring-slate-900"
+                            className="relative h-36 w-36 rounded-full object-cover object-[50%_25%] shadow-xl ring-4 ring-white dark:ring-slate-900"
                         />
                     </div>
 
