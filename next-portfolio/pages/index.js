@@ -5,6 +5,7 @@ import Header from '../components/Header'
 import Hero from '../components/Hero'
 import About from '../components/About'
 import Experience from '../components/Experience'
+import Research from '../components/Research'
 import Skills from '../components/Skills'
 import Projects from '../components/Projects'
 import BlogTeaser from '../components/BlogTeaser'
@@ -75,6 +76,7 @@ export default function Home({ posts = [] }) {
                 <Hero />
                 <About />
                 <Experience />
+                <Research />
                 <Skills />
                 <Projects />
                 <BlogTeaser posts={posts} />
