@@ -1,6 +1,7 @@
 /**
- * Research & Publications — peer-reviewed papers from the CV. Data-driven via
- * data/papers.js; the author listed in `highlight` is visually emphasized.
+ * Research & Publications — publications and the Master's thesis, data-driven
+ * via data/papers.js; the author listed in `highlight` is visually emphasized.
+ * `pages` and `link` are optional per entry and rendered only when present.
  */
 import SectionHeading from './SectionHeading'
 import { papers } from '../data/papers'
@@ -30,7 +31,8 @@ export default function Research() {
                             </span>
                         </div>
                         <p className="mt-1 text-sm font-medium text-primary-700 dark:text-primary-300">
-                            {paper.venue} · {paper.pages}
+                            {paper.venue}
+                            {paper.pages ? ` · ${paper.pages}` : ''}
                         </p>
                         <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-400">
                             {paper.authors.map((author, index) => (
@@ -51,6 +53,20 @@ export default function Research() {
                         <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-400">
                             {paper.description}
                         </p>
+                        {paper.link && (
+                            <div className="mt-4">
+                                <a
+                                    href={paper.link}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="inline-flex items-center gap-1 py-2 -my-2 text-sm font-semibold text-primary-600 transition-colors hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
+                                    aria-label={`View thesis PDF: ${paper.title}`}
+                                >
+                                    View Thesis (PDF)
+                                    <span aria-hidden="true">→</span>
+                                </a>
+                            </div>
+                        )}
                     </li>
                 ))}
             </ol>

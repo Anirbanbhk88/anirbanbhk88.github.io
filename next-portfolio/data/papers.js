@@ -1,8 +1,19 @@
 /**
- * Peer-reviewed publications — straight from the CV. No link/URL fields on
- * purpose: never fabricate DOIs or publisher links.
+ * Publications and the Master's thesis — straight from the CV. Never fabricate
+ * DOIs or publisher links: `link` is optional and only set where an
+ * author-provided document actually exists (currently the thesis PDF).
  */
 export const papers = [
+    {
+        title: 'Temporal Sensor Fusion for 3D Object Detection in Autonomous Driving',
+        year: 2023,
+        venue: "Master's Thesis — MSc Intelligent Adaptive Systems, Universität Hamburg (conducted at Aptiv, Germany)",
+        authors: ['Anirban Bhowmick'],
+        highlight: 'Anirban Bhowmick',
+        description:
+            'Developed and improved a LiDAR–camera sensor-fusion deep neural network for 3D object detection in autonomous driving (ADAS). Enhanced the fusion network with temporal features from sequential data using ConvLSTM layers and automated ground-truth generation during the industry project at Aptiv.',
+        link: 'https://drive.google.com/file/d/1QD8jGzeL489dAFbRFqMOVpNOr-Inh73a/view?usp=drive_link',
+    },
     {
         title: 'How Hateful are Movies? A study and prediction of Hate content on Movies',
         year: 2021,
