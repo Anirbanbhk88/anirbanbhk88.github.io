@@ -159,7 +159,7 @@ export default function Blog({ posts = [] }) {
 
                                             <a
                                                 href={post.url}
-                                                className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-primary-600 transition-colors hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
+                                                className="mt-2 inline-flex items-center gap-1 py-2 -mb-2 text-sm font-semibold text-primary-600 transition-colors hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
                                                 aria-label={`Read post: ${post.title}`}
                                             >
                                                 Read post
@@ -181,7 +181,7 @@ export default function Blog({ posts = [] }) {
                 <div className="mt-14">
                     <a
                         href="/"
-                        className="text-sm font-semibold text-primary-600 transition-colors hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
+                        className="inline-flex items-center py-2 -my-2 text-sm font-semibold text-primary-600 transition-colors hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
                     >
                         ← Back to Home
                     </a>

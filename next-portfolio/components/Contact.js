@@ -84,7 +84,7 @@ export default function Contact() {
                                         href={item.href}
                                         target={item.href.startsWith('http') ? '_blank' : undefined}
                                         rel="noreferrer"
-                                        className="block truncate text-sm font-medium text-slate-900 hover:text-primary-600 dark:text-slate-100 dark:hover:text-primary-300"
+                                        className="block truncate py-2 -my-2 text-sm font-medium text-slate-900 hover:text-primary-600 dark:text-slate-100 dark:hover:text-primary-300"
                                     >
                                         {item.value}
                                     </a>

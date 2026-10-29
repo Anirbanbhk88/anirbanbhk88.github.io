@@ -75,11 +75,12 @@ body {
 /* Back link ------------------------------------------------------------ */
 .post-back {
     display: inline-block;
-    font-size: 0.875rem;
+    padding: 8px 12px 8px 0;
+    margin: -8px 0 1.5rem;
+    font-size: 1rem;
     font-weight: 600;
     color: var(--accent);
     text-decoration: none;
-    margin-bottom: 2rem;
 }
 
 .post-back:hover {

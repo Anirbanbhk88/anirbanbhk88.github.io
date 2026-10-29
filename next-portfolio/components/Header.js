@@ -77,7 +77,7 @@ export default function Header() {
                 </a>
 
                 {/* Desktop nav */}
-                <div className="hidden items-center gap-6 md:flex">
+                <div className="hidden items-center gap-6 lg:flex">
                     {NAV_LINKS.map(link => (
                         <a
                             key={link.href}
@@ -91,7 +91,7 @@ export default function Header() {
                 </div>
 
                 {/* Mobile controls */}
-                <div className="flex items-center gap-2 md:hidden">
+                <div className="flex items-center gap-2 lg:hidden">
                     {themeButton}
                     <button
                         type="button"
@@ -118,7 +118,7 @@ export default function Header() {
             {open && (
                 <div
                     id="mobile-menu"
-                    className="border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950 md:hidden"
+                    className="border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950 lg:hidden"
                 >
                     <div className="space-y-1 px-4 py-3">
                         {NAV_LINKS.map(link => (

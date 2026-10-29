@@ -66,7 +66,7 @@ export default function Projects() {
                             <div className="mt-4">
                                 <a
                                     href={project.href}
-                                    className="inline-flex items-center gap-1 text-sm font-semibold text-primary-600 transition-colors hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
+                                    className="inline-flex items-center gap-1 py-2 -my-2 text-sm font-semibold text-primary-600 transition-colors hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
                                     aria-label={`View ${project.title}`}
                                 >
                                     View project

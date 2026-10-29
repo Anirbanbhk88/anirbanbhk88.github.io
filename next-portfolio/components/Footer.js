@@ -35,7 +35,7 @@ export default function Footer() {
                             <a
                                 key={link.href}
                                 href={link.href}
-                                className="text-sm text-slate-500 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+                                className="py-1 -my-1 text-sm text-slate-500 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
                             >
                                 {link.label}
                             </a>
@@ -49,7 +49,7 @@ export default function Footer() {
                                     href={link.href}
                                     target={link.href.startsWith('mailto:') ? undefined : '_blank'}
                                     rel="noreferrer"
-                                    className="text-sm font-medium text-slate-500 transition-colors hover:text-primary-600 dark:text-slate-400 dark:hover:text-primary-300"
+                                    className="py-1 -my-1 text-sm font-medium text-slate-500 transition-colors hover:text-primary-600 dark:text-slate-400 dark:hover:text-primary-300"
                                 >
                                     {link.label}
                                 </a>

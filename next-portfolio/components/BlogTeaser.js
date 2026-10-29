@@ -36,7 +36,7 @@ export default function BlogTeaser({ posts = [] }) {
                     </div>
                     <a
                         href="/blog/"
-                        className="shrink-0 text-sm font-semibold text-primary-600 transition-colors hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
+                        className="inline-flex shrink-0 items-center py-2 -my-2 text-sm font-semibold text-primary-600 transition-colors hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
                     >
                         View all posts →
                     </a>
@@ -63,14 +63,14 @@ export default function BlogTeaser({ posts = [] }) {
                                     )}
                                 </div>
                                 <h3 className="mt-3 font-display text-lg font-semibold leading-snug text-slate-900 transition-colors group-hover:text-primary-700 dark:text-white dark:group-hover:text-primary-300">
-                                    <a href={post.url}>{post.title}</a>
+                                    <a href={post.url} className="inline-block py-1 -my-1">{post.title}</a>
                                 </h3>
                                 <p className="mt-2 flex-1 text-sm leading-6 text-slate-600 line-clamp-3 dark:text-slate-400">
                                     {post.excerpt}
                                 </p>
                                 <a
                                     href={post.url}
-                                    className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-primary-600 transition-colors hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
+                                    className="mt-2 inline-flex items-center gap-1 py-2 -mb-2 text-sm font-semibold text-primary-600 transition-colors hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
                                     aria-label={`Read post: ${post.title}`}
                                 >
                                     Read post
