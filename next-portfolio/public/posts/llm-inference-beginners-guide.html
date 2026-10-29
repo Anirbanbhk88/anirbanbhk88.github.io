@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="date" content="2026-10-29">
+<meta name="tags" content="Machine Learning, LLM, Inference">
+<meta name="excerpt" content="What happens when you send a prompt to a large language model, what makes it fast or slow, and how engineers split the work across GPUs.">
+<meta name="author" content="Anirban Bhowmick">
+<title>LLM Inference: A Beginner’s Guide</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{--bg:#eef2f6;--s:#fff;--ink:#14213d;--mut:#4f5d75;--line:#cfd8e3;--a:#4f46e5;--b:#0b7d7f;--c:#a96800;--q:#7d8aa0;--on:#fff;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1624;--s:#172033;--ink:#e6ecf5;--mut:#9aa8bf;--line:#2a3750;--a:#818cf8;--b:#3fc1c3;--c:#f0b13f;--q:#6c7a92;--on:#0f1624;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f1624;--s:#172033;--ink:#e6ecf5;--mut:#9aa8bf;--line:#2a3750;--a:#818cf8;--b:#3fc1c3;--c:#f0b13f;--q:#6c7a92;--on:#0f1624;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.6 "IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:960px;margin:0 auto;padding:40px 20px 72px}
+h1{font-size:clamp(2rem,5vw,3rem);line-height:1.1;margin:0 0 10px;font-weight:700;letter-spacing:-.02em}
+h2{font-size:1.45rem;margin:56px 0 8px;font-weight:600;letter-spacing:-.01em}
+h3{font-size:1.05rem;margin:26px 0 6px}
+p{max-width:68ch;margin:0 0 12px}
+.lede{color:var(--mut);font-size:1.08rem;margin-bottom:26px}
+.mut{color:var(--mut)}
+code,.f{font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace;font-size:.88em}
+.box{background:var(--s);border:1px solid var(--line);border-radius:10px;padding:18px 20px;margin:14px 0}
+.box h4{margin:0 0 4px;font-size:.98rem}
+.box p:last-child{margin-bottom:0}
+.sc{overflow-x:auto}
+.bar{display:flex;height:46px;border-radius:6px;overflow:hidden;font-size:.82rem;font-weight:600;color:var(--on);min-width:560px}
+.seg{display:flex;align-items:center;justify-content:center;white-space:nowrap;padding:0 6px}
+.q{background:var(--q)}.p{background:var(--b)}
+.d{background:var(--c);background-image:repeating-linear-gradient(90deg,transparent 0 22px,rgba(255,255,255,.55) 22px 24px)}
+.brk{margin-top:10px;border-top:2px solid var(--ink);position:relative;padding-top:6px;font-size:.84rem;min-width:0}
+.brk::before,.brk::after{content:"";position:absolute;top:-8px;width:2px;height:14px;background:var(--ink)}
+.brk::before{left:0}.brk::after{right:0}
+.rows{margin:0;border-top:1px solid var(--line)}
+.rows>div{display:grid;grid-template-columns:minmax(120px,190px) 1fr;gap:6px 24px;padding:13px 0;border-bottom:1px solid var(--line)}
+.rows dt{font-weight:600}.rows dd{margin:0;max-width:70ch}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.two>.box{margin:0}
+.vis{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0}
+.vis>div{background:var(--s);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.vis h4{margin:0 0 10px;font-size:.95rem}
+.vis small{display:block;margin-top:10px;color:var(--mut);font-size:.85rem;line-height:1.4}
+.g{display:grid;gap:3px}
+.c{height:18px;border-radius:3px;border:1px solid transparent}
+.new{background:var(--a)}.redo{background:var(--c)}.hit{background:var(--line)}.none{border-color:var(--line);opacity:.5}
+.r1{background:var(--a)}.r2{background:var(--b)}.r3{background:var(--c)}
+.waste{background:repeating-linear-gradient(45deg,transparent 0 3px,var(--line) 3px 5px);border-color:var(--line)}
+.free{border:1px dashed var(--q);opacity:.6}
+.lg{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.82rem;color:var(--mut);margin-top:10px}
+.lg i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:-1px;border:1px solid transparent}
+.flow{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:12px 0}
+.n{border:1px solid var(--line);background:var(--s);border-radius:8px;padding:8px 12px;font-size:.88rem;text-align:center}
+.n b{display:block}.n.a{border-color:var(--a)}.n.b{border-color:var(--b)}.n.c{border-color:var(--c)}
+.ar{color:var(--mut)}
+.tw{overflow-x:auto;background:var(--s);border:1px solid var(--line);border-radius:10px;margin:14px 0}
+table{border-collapse:collapse;width:100%;min-width:560px;font-size:.93rem}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-weight:600;color:var(--mut);font-size:.86rem}
+tr:last-child td{border-bottom:0}td:first-child{font-weight:600;white-space:nowrap}
+.fm{display:grid;gap:10px;margin:0;padding:0;list-style:none}
+.fm li{background:var(--s);border:1px solid var(--line);border-left:4px solid var(--a);border-radius:6px;padding:11px 16px}
+.fm .f{display:block}.fm small{color:var(--mut)}
+@media (max-width:660px){.two,.vis{grid-template-columns:1fr}.rows>div{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main>
+<a href="/blog/" style="display:inline-block;margin-bottom:16px;color:var(--mut);text-decoration:none;font-size:.9rem">← Back to Blog</a>
+<h1>LLM inference: a beginner’s guide</h1>
+<p class="mut">Anirban Bhowmick · 29 Oct 2026 · Machine Learning, LLM, Inference</p>
+<p class="lede">What happens when you send a prompt to a large language model, what makes it fast or slow, and how engineers split the work across GPUs. No background assumed.</p>
+
+<h2>1. How a model produces text</h2>
+<p>An LLM reads and writes <b>tokens</b> (word pieces, roughly ¾ of a word each). It writes one token at a time: it looks at everything so far, picks the next token, adds it to the text, and repeats. Using a trained model like this is called <b>inference</b>, as opposed to training.</p>
+<p>“Looking at everything so far” is done by <b>attention</b>. Every token becomes three vectors: a <b>Query</b> (what am I looking for?), a <b>Key</b> (what do I contain?) and a <b>Value</b> (what do I hand over if chosen?). The newest token’s Query is matched against the Keys of all earlier tokens, and their Values are blended into the result.</p>
+<div class="box sc"><div style="min-width:560px">
+<div class="bar"><span class="seg q" style="flex:10">queue</span><span class="seg p" style="flex:25">prefill</span><span class="seg d" style="flex:65">decode: one token per step</span></div>
+<div class="brk" style="width:35%"><b>TTFT</b> <span class="mut">wait for first token</span></div>
+<div class="brk" style="margin-left:35%;width:65%"><b>TPOT</b> <span class="mut">gap between tokens, repeated for every output token</span></div>
+</div></div>
+
+<h2>2. Prefill and decode</h2>
+<p>Every request has two phases with very different needs. Most serving tricks target one of them.</p>
+<div class="two">
+<div class="box"><h4 style="color:var(--b)">Prefill</h4><p>Reads your whole prompt at once, in parallel. Lots of arithmetic on big matrices, so it is <b>compute-bound</b>. It decides how long you wait for the first token.</p></div>
+<div class="box"><h4 style="color:var(--c)">Decode</h4><p>Writes the answer one token per step. Each step must re-read all the model weights and the stored history from GPU memory but does little math, so it is <b>memory-bandwidth-bound</b>. It decides how fast text streams.</p></div>
+</div>
+
+<h2>3. Measuring speed: latency and throughput</h2>
+<dl class="rows">
+<div><dt>TTFT</dt><dd>Time to first token: queueing plus prefill. Grows with prompt length and load. Drives how responsive a chat feels.</dd></div>
+<div><dt>TPOT / ITL</dt><dd>Time per output token (inter-token latency). About 25–50 ms feels like fast streaming. Its inverse is tokens per second for one user.</dd></div>
+<div><dt>End-to-end latency</dt><dd>≈ TTFT + TPOT × (output tokens − 1). What matters for non-streaming calls and agents.</dd></div>
+<div><dt>Throughput</dt><dd>Total tokens per second the whole system produces for all users together. It sets your cost per token.</dd></div>
+<div><dt>Goodput</dt><dd>Throughput that still meets your latency targets (SLOs). High raw throughput is worthless if most requests are too slow.</dd></div>
+<div><dt>P50 / P95 / P99</dt><dd>Percentile latencies. Averages hide slow outliers, so set targets on P95 or P99.</dd></div>
+</dl>
+<div class="box"><h4>The central trade-off</h4><p>Running many requests in one batch shares each expensive weight read across all of them, so <b>throughput goes up</b>. But each request now waits for a bigger step, so <b>latency goes up</b>. Most inference tuning is choosing where to sit on this curve.</p></div>
+
+<h2>4. The KV cache</h2>
+<h3>Why it exists</h3>
+<p>Look at the earlier tokens’ Keys and Values: they never change once computed. If the model recomputed them for every new token, generating a 500-token answer would repeat the same work hundreds of times. The <b>KV cache</b> stores each token’s Key and Value in GPU memory the first time, so every later step only computes the newest token and <i>reads</i> the rest. Think of keeping notes instead of re-reading the whole book before each new sentence.</p>
+<div class="vis">
+<div><h4>Without a cache</h4><div class="g" id="g1"></div><small>Each step recomputes every earlier token again, so work piles up.</small></div>
+<div><h4>With a cache</h4><div class="g" id="g2"></div><small>Each step computes one new token and reuses the rest.</small></div>
+</div>
+<div class="lg"><span><i style="background:var(--a)"></i>newly computed</span><span><i style="background:var(--c)"></i>recomputed (wasted)</span><span><i style="background:var(--line)"></i>read from cache</span><span>rows = steps, columns = tokens</span></div>
+
+<h3>The catch: it uses lots of memory</h3>
+<p>The cache grows with every token, in every layer, for every user in the batch. For a 13B-class model it is about 0.8 MB per token, so one 2,000-token chat holds roughly 1.6 GB. Serve dozens of users and the cache can outgrow the model weights. Whatever memory the weights leave over decides <b>how many users you can serve at once</b>.</p>
+
+<h3>How older servers wasted it</h3>
+<p>Nobody knows an answer’s length in advance, so older systems reserved one contiguous block per request sized for the maximum. Most requests use far less, leaving reserved-but-empty gaps. Measurements showed 60–80% of cache memory wasted.</p>
+
+<h3>PagedAttention (vLLM)</h3>
+<p>vLLM copies an idea from operating systems: split the cache into small fixed-size <b>blocks</b> (say 16 tokens), hand them out only when needed, and keep a <b>block table</b> per request that maps its tokens to wherever its blocks happen to sit. Blocks need not be neighbours, so nothing is stranded.</p>
+<div class="vis">
+<div><h4>Reserve the maximum</h4><div class="g" id="g3"></div><small>Hatched cells are reserved but never used.</small></div>
+<div><h4>Paged blocks on demand</h4><div class="g" id="g4"></div><small>Each request’s blocks are scattered, only the last block is partly empty, and dashed cells stay free for new requests.</small></div>
+</div>
+<div class="lg"><span><i style="background:var(--a)"></i>request A</span><span><i style="background:var(--b)"></i>request B</span><span><i style="background:var(--c)"></i>request C</span></div>
+<p>Benefits: near-zero waste, larger batches (about 2–4× the throughput in the original paper), and <b>sharing</b>. Requests that start with the same system prompt can point at the same physical blocks; if one later diverges, only that block is copied (copy-on-write). This is <b>prefix caching</b>, which also saves the compute of re-reading that shared prompt.</p>
+
+<h3>Making the cache smaller</h3>
+<dl class="rows">
+<div><dt>GQA / MQA</dt><dd>Several attention heads share one set of Keys and Values, shrinking the cache a lot with little quality loss.</dd></div>
+<div><dt>Cache quantization</dt><dd>Store K and V in 8-bit instead of 16-bit: half the memory, more room for batch.</dd></div>
+<div><dt>FlashAttention</dt><dd>Computes attention in tiles inside fast on-chip memory, avoiding big temporary reads and writes.</dd></div>
+</dl>
+
+<h2>5. Splitting a model across GPUs</h2>
+<p>A 70B-parameter model in 16-bit needs about 140 GB for weights alone, more than any single GPU holds. And even when a model fits, you may want more speed. So the work is divided. The main ways differ in <i>what</i> gets divided and <i>how much talking</i> the GPUs must do.</p>
+
+<h3>Tensor parallelism (TP): split each layer</h3>
+<p>Each big weight matrix is cut into slices, one per GPU. Every GPU computes its slice for the same token at the same time, then they combine partial results with an <b>all-reduce</b> (a fast sum across GPUs), about twice per layer. Attention heads are simply divided among GPUs too.</p>
+<div class="vis">
+<div><h4>One weight matrix, two GPUs</h4><div class="g" id="g5"></div><div class="lg"><span><i style="background:var(--a)"></i>GPU 0 slice</span><span><i style="background:var(--b)"></i>GPU 1 slice</span></div></div>
+<div><h4>Per layer</h4><div class="flow"><div class="n a"><b>GPU 0</b>left slice</div><div class="n b"><b>GPU 1</b>right slice</div></div><div class="flow"><span class="ar">↓</span><div class="n c"><b>all-reduce</b>sum partial results</div><span class="ar">→ next layer</span></div><small>Lower latency per token and less memory per GPU, but heavy traffic: use it inside one machine with fast links such as NVLink.</small></div>
+</div>
+
+<h3>Pipeline parallelism (PP): split by layers</h3>
+<p>GPUs take consecutive groups of layers, like stations on an assembly line. Only the small hidden-state result is passed along, so traffic is light and it works across machines. It does <i>not</i> make one token faster (it still passes through every layer), and with few requests some stations sit idle, called <b>bubbles</b>. Keep several requests in flight to stay busy.</p>
+<div class="flow"><div class="n a"><b>GPU 0</b>layers 1–20</div><span class="ar">→</span><div class="n b"><b>GPU 1</b>layers 21–40</div><span class="ar">→</span><div class="n c"><b>GPU 2</b>layers 41–60</div><span class="ar">→</span><div class="n a"><b>GPU 3</b>layers 61–80</div></div>
+
+<h3>Expert parallelism (EP): for Mixture-of-Experts</h3>
+<p>MoE models contain many small “expert” networks, and a router sends each token to only a few. Experts are spread over GPUs, and tokens travel to the right GPU and back (an <b>all-to-all</b>). Risk: popular experts become overloaded hot spots.</p>
+<div class="flow"><div class="n"><b>tokens</b></div><span class="ar">→</span><div class="n"><b>router</b>picks experts</div><span class="ar">→</span><div class="n a">experts 1–4<br>GPU 0</div><div class="n b">experts 5–8<br>GPU 1</div><span class="ar">→ combine</span></div>
+
+<h3>Sequence / context parallelism</h3>
+<p>For very long prompts, the <i>sequence itself</i> is divided: each GPU holds a chunk of the tokens and, in Ring Attention, passes Key/Value chunks around a ring while attention is computed piece by piece. It helps most with long-context prefill. (Sequence parallelism in Megatron is a related memory-saving trick for the non-attention parts.)</p>
+
+<h3>Data parallelism (DP): copy the whole thing</h3>
+<p>Run several identical replicas of the model and spread requests across them. It adds throughput, not capacity for bigger models, and needs no GPU-to-GPU talk between replicas.</p>
+
+<h3>Disaggregated serving</h3>
+<p>Since prefill is compute-bound and decode is memory-bound, some systems run them on <b>separate GPU pools</b> with different settings each, and ship the KV cache from the prefill pool to the decode pool.</p>
+<div class="tw"><table>
+<thead><tr><th>Strategy</th><th>Splits</th><th>Traffic</th><th>Best for</th></tr></thead>
+<tbody>
+<tr><td>Tensor</td><td>Matrices, heads</td><td>All-reduce, 2 per layer</td><td>Low latency inside a node</td></tr>
+<tr><td>Pipeline</td><td>Layers</td><td>Light point-to-point</td><td>Huge models across nodes</td></tr>
+<tr><td>Expert</td><td>MoE experts</td><td>All-to-all</td><td>MoE models</td></tr>
+<tr><td>Context</td><td>Tokens</td><td>Ring or all-to-all</td><td>Very long prompts</td></tr>
+<tr><td>Data</td><td>Requests</td><td>None between replicas</td><td>More throughput</td></tr>
+</tbody></table></div>
+<div class="box"><h4>Rule of thumb</h4><p>Use the smallest split that fits. Tensor parallel inside a node, pipeline across nodes, replicas for throughput. With GQA, the number of KV heads caps how far TP is useful. Quantizing to FP8 or INT4 can let a 70B model fit on one or two GPUs, avoiding splits altogether.</p></div>
+
+<h2>6. Batching and scheduling</h2>
+<div class="tw"><table>
+<thead><tr><th>Technique</th><th>What it does</th><th>Effect</th></tr></thead>
+<tbody>
+<tr><td>Static batching</td><td>Waits for a fixed group and runs it to the end</td><td>Short requests wait for the longest</td></tr>
+<tr><td>Continuous batching</td><td>Adds and removes requests every decode step</td><td>Far higher throughput, less waiting</td></tr>
+<tr><td>Chunked prefill</td><td>Cuts long prompts into pieces mixed with decodes</td><td>Keeps streaming smooth for others</td></tr>
+<tr><td>Preemption</td><td>Evicts a request’s cache when memory runs out</td><td>Avoids crashes, costs latency</td></tr>
+</tbody></table></div>
+
+<h2>7. Other speed-ups</h2>
+<div class="tw"><table>
+<thead><tr><th>Technique</th><th>Helps</th><th>Trade-off</th></tr></thead>
+<tbody>
+<tr><td>Quantization</td><td>Smaller weights, less memory traffic, bigger batches</td><td>Possible quality loss</td></tr>
+<tr><td>Speculative decoding</td><td>A small draft model guesses tokens; the big model checks them in one pass, lowering TPOT</td><td>Extra memory; gain depends on guess accuracy</td></tr>
+<tr><td>Prefix caching</td><td>Lower TTFT and cost for repeated prompts</td><td>Needs stable prompt starts</td></tr>
+</tbody></table></div>
+
+<h2>8. Which knob for which goal</h2>
+<div class="tw"><table>
+<thead><tr><th>If you want</th><th>Try</th><th>Watch out for</th></tr></thead>
+<tbody>
+<tr><td>Lower TTFT</td><td>Prefix caching, chunked prefill, shorter prompts</td><td>Queueing under load</td></tr>
+<tr><td>Lower TPOT</td><td>Smaller batch, tensor parallelism, quantization, speculative decoding</td><td>Less throughput per GPU</td></tr>
+<tr><td>Higher throughput</td><td>Bigger batch, continuous batching, more replicas</td><td>Slower individual requests</td></tr>
+<tr><td>Longer context</td><td>GQA, cache quantization, context parallelism, paged cache</td><td>Cache limits batch size</td></tr>
+</tbody></table></div>
+
+<h2>9. Handy formulas</h2>
+<ul class="fm">
+<li><span class="f">KV bytes per token = 2 × layers × KV heads × head dim × bytes per value</span><small>The 2 is for Keys and Values. Multiply by tokens and by concurrent users.</small></li>
+<li><span class="f">Weight memory ≈ parameters × bytes per parameter</span><small>70B: about 140 GB at FP16, 70 GB at FP8, 35 GB at INT4.</small></li>
+<li><span class="f">Single-user tokens/sec ≲ memory bandwidth ÷ bytes read per step</span><small>Rough ceiling, since each step reads about all weights once.</small></li>
+</ul>
+<p class="mut" style="margin-top:28px;font-size:.9rem">Figures such as streaming speeds and memory sizes are typical guidance; measure on your own hardware and workload.</p>
+</main>
+<script>
+function G(id,r,c,f){var e=document.getElementById(id);e.style.gridTemplateColumns='repeat('+c+',1fr)';for(var i=0;i<r;i++)for(var j=0;j<c;j++){var d=document.createElement('div');d.className='c '+f(i,j);e.appendChild(d)}}
+G('g1',4,7,function(i,j){return j<3+i?'redo':j==3+i?'new':'none'});
+G('g2',4,7,function(i,j){return j<3+i?'hit':j==3+i?'new':'none'});
+var U=[5,8,3];
+G('g3',3,12,function(i,j){return j<U[i]?'r'+(i+1):'waste'});
+var M=[1,2,2,0,1,3,2,0,2,1,2,0,0,3,2,2,1,0,2,3,0,1,0,0];
+G('g4',2,12,function(i,j){var v=M[i*12+j];return v?'r'+v:'free'});
+G('g5',4,8,function(i,j){return j<4?'r1':'r2'});
+</script>
+</body>
+</html>

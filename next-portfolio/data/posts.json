@@ -1,6 +1,19 @@
 {
-  "generatedAt": "2026-10-29T10:11:31.390Z",
+  "generatedAt": "2026-10-29T10:23:18.088Z",
   "posts": [
+    {
+      "slug": "llm-inference-beginners-guide",
+      "title": "LLM Inference: A Beginner’s Guide",
+      "date": "2026-10-29",
+      "tags": [
+        "Machine Learning",
+        "LLM",
+        "Inference"
+      ],
+      "excerpt": "What happens when you send a prompt to a large language model, what makes it fast or slow, and how engineers split the work across GPUs.",
+      "author": "Anirban Bhowmick",
+      "url": "/posts/llm-inference-beginners-guide.html"
+    },
     {
       "slug": "sandakphu-diary",
       "title": "The Sandakphu Diary",
