@@ -1,4 +1,7 @@
-const CV_URL = 'https://drive.google.com/file/d/1F-lm2JaF_nqskqLlLozDVE1Xe5oQ1cA6/view?usp=drive_link'
+// CV is now self-hosted at /anirban_bhowmick_cv.pdf (was previously hosted on
+// Google Drive; original URL kept here as fallback history:
+// https://drive.google.com/file/d/1F-lm2JaF_nqskqLlLozDVE1Xe5oQ1cA6/view?usp=drive_link)
+const CV_URL = '/anirban_bhowmick_cv.pdf'
 
 function GitHubIcon() {
     return (
