@@ -68,7 +68,7 @@ export default function Hero() {
 
                     <p className="mt-8 inline-flex items-center gap-2 rounded-full border border-primary-200 bg-primary-50 px-3 py-1 text-xs font-medium text-primary-700 dark:border-primary-800 dark:bg-primary-950/60 dark:text-primary-300">
                         <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-primary-500" />
-                        Research Engineer — ML &amp; Perception
+                        AI Engineer — LLMs, RAG &amp; Data Pipelines
                     </p>
 
                     <h1
@@ -79,7 +79,7 @@ export default function Hero() {
                     </h1>
 
                     <p className="reveal delay-150 mt-3 text-lg font-medium text-primary-700 dark:text-primary-300 sm:text-xl">
-                        ML Engineer • Data Scientist • Full-stack Developer
+                        8+ years bridging research &amp; enterprise software
                     </p>
 
                     <p className="reveal delay-250 mt-4 max-w-2xl text-base leading-7 text-slate-600 dark:text-slate-400 sm:text-lg">

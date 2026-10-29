@@ -47,15 +47,20 @@ export default function About() {
                 id="about-title"
                 eyebrow="About"
                 title="Turning data into models that work"
-                description="Research engineer with a software engineering backbone."
+                description="AI Engineer bridging research and enterprise software."
             />
 
             <p className="reveal mx-auto mt-6 max-w-3xl text-center text-base leading-7 text-slate-600 dark:text-slate-300">
-                I specialise in AI engineering — building end-to-end data pipelines for training, fine-tuning
-                and evaluating large language models (LLMs). I design scalable data ingestion, preprocessing,
-                labeling and evaluation workflows, and implement model versioning, monitoring and CI/CD to keep
-                models production-ready. My strong background in software engineering (mobile apps, backend
-                services, Docker, Git, and CI pipelines) ensures ML systems are robust, maintainable and scalable.
+                I&rsquo;m an AI Engineer with 8+ years of experience bridging the gap between research
+                (Fraunhofer IAIS) and enterprise software (TCS). I specialise in RAG systems, LLM
+                fine-tuning and deploying scalable AI solutions.
+            </p>
+
+            <p className="reveal mx-auto mt-4 max-w-3xl text-center text-base leading-7 text-slate-600 dark:text-slate-300">
+                Today I build the data pipelines, evaluation frameworks and tooling behind large language
+                models; before that, I spent close to a decade shipping enterprise and mobile applications.
+                That combination lets me take models from research prototypes to robust, production-ready
+                systems.
             </p>
 
             {/* Highlight cards */}
