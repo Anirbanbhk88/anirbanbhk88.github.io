@@ -35,7 +35,7 @@ export default function BlogTeaser({ posts = [] }) {
                         </p>
                     </div>
                     <a
-                        href="/blog"
+                        href="/blog/"
                         className="shrink-0 text-sm font-semibold text-primary-600 transition-colors hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
                     >
                         View all posts →
