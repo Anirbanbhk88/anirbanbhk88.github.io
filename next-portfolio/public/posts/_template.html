@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<!--
+  ============================================================================
+  BLOG POST TEMPLATE — how to publish a post
+  ============================================================================
+  1. Copy this file and rename the copy to your-slug.html
+     (slug = lowercase, hyphenated, no spaces; it becomes the URL:
+      https://anirbanbhk88.github.io/posts/your-slug.html)
+
+  2. NEVER rename this template itself: files starting with "_" are ignored
+     by the build script (next-portfolio/scripts/build-posts.js).
+
+  3. The build script reads these from your file:
+       <title>                  -> post title (fallback: humanized filename)
+       <meta name="date">       -> "YYYY-MM-DD"  (fallback: file's modified date)
+       <meta name="tags">       -> comma-separated, e.g. "Travel, Trekking"
+       <meta name="excerpt">    -> 1–2 sentences shown on the blog index
+       <meta name="author">     -> defaults to "Anirban Bhowmick"
+
+  4. Write your post inside <article class="post-page"> below. All styles come
+     from /posts/post.css (headings, images, blockquotes, code, figures…).
+
+  5. Commit and push. CI runs `npm run build`, whose prebuild step regenerates
+     data/posts.json, then exports and deploys the site automatically.
+  ============================================================================
+-->
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Post title shown on the blog index and in the browser tab -->
+    <title>Your Post Title</title>
+
+    <!-- Publish date, format YYYY-MM-DD -->
+    <meta name="date" content="2026-01-01" />
+
+    <!-- Comma-separated tags -->
+    <meta name="tags" content="Tag One, Tag Two" />
+
+    <!-- Short summary shown on the blog index and homepage teaser -->
+    <meta name="excerpt" content="A short one or two sentence summary of what this post is about." />
+
+    <!-- Author name (optional, defaults to Anirban Bhowmick) -->
+    <meta name="author" content="Anirban Bhowmick" />
+
+    <!-- Shared post styles (site design tokens) -->
+    <link rel="stylesheet" href="/posts/post.css" />
+
+    <!-- Pre-paint theme bootstrap: matches the site's dark-mode behaviour -->
+    <script>
+        (function () {
+            try {
+                var stored = localStorage.getItem('theme');
+                var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                var dark = stored ? stored === 'dark' : prefersDark;
+                document.documentElement.classList.toggle('dark', dark);
+            } catch (e) {}
+        })();
+    </script>
+</head>
+<body>
+    <article class="post-page">
+        <a class="post-back" href="/blog/">&larr; Back to Blog</a>
+
+        <header class="post-header">
+            <p class="post-meta">
+                <time datetime="2026-01-01">1 January 2026</time>
+                &middot; Tag One &middot; Anirban Bhowmick
+            </p>
+            <h1 class="post-title">Your Post Title</h1>
+        </header>
+
+        <div class="post-body">
+            <p>
+                Start writing here. Regular paragraphs, <strong>bold</strong>,
+                <em>italic</em> and <a href="https://example.com">links</a> all work.
+            </p>
+
+            <h2>A section heading</h2>
+            <p>
+                Use h2/h3 to structure longer posts. Keep paragraphs short and
+                readable.
+            </p>
+
+            <figure>
+                <img src="/images/blog-1.jpg" alt="Describe what the image shows" />
+                <figcaption>Optional caption for the image.</figcaption>
+            </figure>
+
+            <blockquote>
+                Use blockquotes for quotes worth highlighting.
+            </blockquote>
+
+            <ul>
+                <li>A bullet list item</li>
+                <li>Another bullet list item</li>
+            </ul>
+
+            <h3>A smaller heading</h3>
+            <p>
+                Inline <code>code</code> and code blocks are styled too:
+            </p>
+            <pre><code>console.log("Hello, world!")</code></pre>
+
+            <hr />
+            <p>Happy writing!</p>
+        </div>
+    </article>
+</body>
+</html>
