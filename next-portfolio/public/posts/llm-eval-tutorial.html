@@ -1,0 +1,759 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- Post metadata (read by scripts/build-posts.js) -->
+<title>LLM Evaluation: A Field Guide</title>
+<meta name="date" content="2026-11-24">
+<meta name="tags" content="Machine Learning, LLM, Evaluation, Statistics">
+<meta name="excerpt" content="How to run, read, and argue about LLM evaluations — request types, metrics, judges, error bars, and the pitfalls that silently change scores. Includes interactive confidence-interval and pass@k calculators.">
+<meta name="author" content="Anirban Bhowmick">
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#fbfaf7; --panel:#ffffff; --ink:#1d1f23; --muted:#5d636e; --line:#e4e1da;
+  --accent:#2f5bd3; --accent-soft:#e9effd; --code-bg:#f3f1ec; --code-ink:#2a2d33;
+  --warn:#b3541e; --warn-soft:#fbede4; --ok:#1f7a4d; --ok-soft:#e5f4ec;
+  --note:#6b3fb5; --note-soft:#f1ebfb; --shadow:0 1px 2px rgba(0,0,0,.05);
+  --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --sans: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#14161a; --panel:#1b1e23; --ink:#e7e9ee; --muted:#9aa1ad; --line:#2c3038;
+    --accent:#7ea2ff; --accent-soft:#1f2a44; --code-bg:#20242b; --code-ink:#dfe3ea;
+    --warn:#f0a070; --warn-soft:#3a271c; --ok:#6fd3a0; --ok-soft:#1b3328;
+    --note:#c4a6ff; --note-soft:#2b2340; --shadow:none;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#14161a; --panel:#1b1e23; --ink:#e7e9ee; --muted:#9aa1ad; --line:#2c3038;
+  --accent:#7ea2ff; --accent-soft:#1f2a44; --code-bg:#20242b; --code-ink:#dfe3ea;
+  --warn:#f0a070; --warn-soft:#3a271c; --ok:#6fd3a0; --ok-soft:#1b3328;
+  --note:#c4a6ff; --note-soft:#2b2340; --shadow:none;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.65 var(--sans);-webkit-font-smoothing:antialiased}
+main{max-width:920px;margin:0 auto;padding:28px 24px 110px}
+.post-back{display:inline-block;color:var(--muted);text-decoration:none;font-size:14px;padding:6px 10px 6px 0}
+.post-back:hover{color:var(--accent)}
+header.hero{border-bottom:1px solid var(--line);padding-bottom:26px;margin-bottom:8px}
+.byline{font-size:14px;color:var(--muted);margin:0}
+.byline b{color:var(--ink);font-weight:600}
+header.hero h1{font-size:clamp(28px,5vw,38px);line-height:1.15;margin:12px 0 10px;letter-spacing:-.02em}
+header.hero p{color:var(--muted);max-width:780px;margin:6px 0;font-size:17px}
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.pill{font-size:12.5px;border:1px solid var(--line);border-radius:999px;padding:3px 10px;color:var(--muted);background:var(--panel)}
+.tocbox{border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:14px 20px 16px;margin:24px 0 4px;columns:3;column-gap:30px;font-size:13.5px}
+.tocbox h2{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:2px 0 8px}
+.tocbox .part{margin:10px 0 3px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;break-after:avoid}
+.tocbox a{display:block;padding:2px 0;color:var(--muted);text-decoration:none;break-inside:avoid}
+.tocbox a:hover{color:var(--accent)}
+section{padding-top:34px;scroll-margin-top:16px}
+section h2{font-size:27px;letter-spacing:-.01em;margin:0 0 6px}
+section h2 .num{color:var(--accent);font-variant-numeric:tabular-nums;margin-right:8px}
+section h3{font-size:19px;margin:28px 0 6px}
+section h4{font-size:16px;margin:20px 0 4px}
+.lede{color:var(--muted);font-size:16.5px;margin-top:0}
+p{margin:10px 0}
+a{color:var(--accent)}
+code{font-family:var(--mono);font-size:.88em;background:var(--code-bg);color:var(--code-ink);padding:1px 5px;border-radius:4px}
+pre{font-family:var(--mono);font-size:13px;line-height:1.55;background:var(--code-bg);color:var(--code-ink);padding:14px 16px;border-radius:8px;overflow-x:auto;border:1px solid var(--line);margin:12px 0}
+pre code{background:none;padding:0;font-size:inherit}
+pre .c{color:var(--muted)} pre .k{color:var(--accent);font-weight:600} pre .h{background:var(--warn-soft);color:var(--warn);border-radius:3px;padding:0 2px}
+.callout{border:1px solid var(--line);border-left:4px solid var(--accent);background:var(--panel);border-radius:8px;padding:12px 16px;margin:16px 0;box-shadow:var(--shadow)}
+.callout .tag{font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px;display:block}
+.callout.note{border-left-color:var(--note);background:var(--note-soft)} .callout.note .tag{color:var(--note)}
+.callout.warn{border-left-color:var(--warn);background:var(--warn-soft)} .callout.warn .tag{color:var(--warn)}
+.callout.ok{border-left-color:var(--ok);background:var(--ok-soft)} .callout.ok .tag{color:var(--ok)}
+.callout.info .tag{color:var(--accent)}
+.callout p:first-of-type{margin-top:0} .callout p:last-child{margin-bottom:0}
+table{border-collapse:collapse;width:100%;font-size:14.5px;margin:14px 0;display:block;overflow-x:auto}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:700}
+td code{white-space:nowrap}
+.sev{display:inline-block;font-size:11.5px;font-weight:700;padding:1px 8px;border-radius:999px;white-space:nowrap}
+.sev.hi{background:var(--warn-soft);color:var(--warn)} .sev.md{background:var(--accent-soft);color:var(--accent)} .sev.lo{background:var(--code-bg);color:var(--muted)}
+details.quiz{border:1px dashed var(--line);border-radius:8px;padding:10px 14px;margin:16px 0;background:var(--panel)}
+details.quiz summary{cursor:pointer;font-weight:600}
+details.quiz summary::before{content:"✎ Check yourself — "; color:var(--accent)}
+details.quiz div{margin-top:8px;color:var(--ink)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0}
+.card{border:1px solid var(--line);border-radius:8px;padding:12px 14px;background:var(--panel)}
+.card h4{margin:0 0 4px}
+.card p{margin:4px 0;font-size:14.5px}
+figure{margin:18px 0}
+figure svg{width:100%;height:auto;display:block}
+figcaption{font-size:13px;color:var(--muted);margin-top:6px}
+svg text{font-family:var(--sans);fill:var(--ink)}
+svg .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+svg .box.a{fill:var(--accent-soft);stroke:var(--accent)}
+svg .box.o{fill:var(--note-soft);stroke:var(--note)}
+svg .box.w{fill:var(--warn-soft);stroke:var(--warn)}
+svg .arr{stroke:var(--muted);stroke-width:1.5;fill:none;marker-end:url(#ah)}
+svg .small{font-size:11px;fill:var(--muted)}
+.calc{border:1px solid var(--line);border-radius:10px;padding:16px;background:var(--panel);margin:16px 0}
+.calc .row{display:flex;flex-wrap:wrap;gap:14px;align-items:end}
+.calc label{font-size:13px;color:var(--muted);display:flex;flex-direction:column;gap:3px}
+.calc input{font:inherit;width:110px;padding:5px 8px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink)}
+.calc .out{margin-top:12px;font-family:var(--mono);font-size:14px;line-height:1.7}
+.calc .out b{color:var(--accent)}
+.bar{height:10px;background:var(--code-bg);border-radius:5px;position:relative;margin:8px 0 2px;max-width:420px}
+.bar span{position:absolute;top:0;bottom:0;background:var(--accent);opacity:.35;border-radius:5px}
+.bar i{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--accent)}
+ul.check{list-style:none;padding-left:0}
+ul.check li{padding-left:28px;position:relative;margin:6px 0}
+ul.check li::before{content:"☐";position:absolute;left:4px;color:var(--accent)}
+dl.gloss dt{font-weight:700;margin-top:10px}
+dl.gloss dd{margin:2px 0 0 0;color:var(--muted)}
+@media (max-width:820px){ .tocbox{columns:2} .grid2{grid-template-columns:1fr} }
+@media (max-width:600px){ main{padding:20px 16px 80px} .tocbox{columns:1} }
+</style>
+</head>
+<body>
+<main>
+<a class="post-back" href="/blog/">&larr; Back to Blog</a>
+
+<header class="hero">
+  <p class="byline"><b>Anirban Bhowmick</b> &middot; <time datetime="2026-11-24">24 Nov 2026</time> &middot; Machine Learning, LLM, Evaluation</p>
+  <h1>LLM Evaluation: A Field Guide</h1>
+  <p>Everything an engineer needs to run, read, and argue about LLM evaluations. Each section explains a concept, shows where it bites in a real stack, and then lists the pitfalls.</p>
+  <p>Examples throughout come from two real codebases I have worked with: an eval suite runner built on EleutherAI's <i>lm-evaluation-harness</i> (lm-eval), and a static dashboard that aggregates scores across a post-training chain for a reasoning MoE (mid-train &rarr; SFT &rarr; DPO &rarr; RLVR &rarr; OPSD &rarr; soup &rarr; RLHF).</p>
+  <div class="pills">
+    <span class="pill">lm-eval 0.4.x</span><span class="pill">vLLM / HF / OpenAI-compatible APIs</span>
+    <span class="pill">MC &middot; generative &middot; judge</span><span class="pill">stats &amp; aggregation</span><span class="pill">German &amp; multilingual</span>
+  </div>
+</header>
+
+<nav class="tocbox" aria-label="Contents">
+  <h2>Contents</h2>
+  <span class="part">Foundations</span>
+  <a href="#s1">1 · What evaluation measures</a>
+  <a href="#s2">2 · lm-eval harness anatomy</a>
+  <a href="#s3">3 · The request types</a>
+  <a href="#s4">4 · Models &amp; backends</a>
+  <a href="#s5">5 · Prompting choices</a>
+  <a href="#s6">6 · Metrics in depth</a>
+  <span class="part">Advanced</span>
+  <a href="#s7">7 · Evaluating post-training</a>
+  <a href="#s8">8 · LLM-as-a-judge</a>
+  <a href="#s9">9 · Statistics &amp; error bars</a>
+  <a href="#s10">10 · Aggregation &amp; leaderboards</a>
+  <a href="#s11">11 · Contamination &amp; hygiene</a>
+  <a href="#s12">12 · Reproducibility &amp; ops</a>
+  <a href="#s13">13 · Multilingual / German</a>
+  <span class="part">Practice</span>
+  <a href="#s14">14 · Fifteen lessons from a real stack</a>
+  <a href="#s15">15 · Expert checklist &amp; roadmap</a>
+  <a href="#s16">16 · Glossary</a>
+</nav>
+
+<!-- ============================================================ 1 -->
+<section id="s1">
+<h2><span class="num">1</span>What evaluation actually measures</h2>
+<p class="lede">An eval score is a measurement. The instrument is a dataset plus a prompt, a decoding setup, an answer extractor and a metric. The object being measured is the model. Change any part of the instrument and you get a different number.</p>
+
+<h3>The measurement equation</h3>
+<pre><code>score = Metric( Extract( Model( Prompt( Dataset ), Decoding ) ), Reference )
+        ± sampling error (finite n)   ± run noise (temperature, non-determinism)</code></pre>
+<p>Most mistakes in LLM evaluation come from forgetting one of these terms. Typical cases: comparing two scores produced with different <i>Prompt</i> or <i>Extract</i> steps, ignoring the ± terms, or averaging scores produced by different <i>Metric</i>s.</p>
+
+<h3>What you can measure</h3>
+<div class="grid2">
+  <div class="card"><h4>Capability</h4><p>Knowledge (MMLU, GPQA), reasoning (ARC, BBH), maths (GSM8K, AIME), code (HumanEval, LiveCodeBench, SWE-bench), tool use (BFCL, τ²).</p></div>
+  <div class="card"><h4>Alignment / helpfulness</h4><p>Instruction following (IFEval), chat quality (MT-Bench, AlpacaEval, Arena-Hard), usually scored by a judge model.</p></div>
+  <div class="card"><h4>Safety</h4><p>Harmful compliance (attack success), over-refusal, toxicity, dangerous knowledge (WMDP), reward-hacking probes.</p></div>
+  <div class="card"><h4>Efficiency</h4><p>Tokens per answer, latency, throughput, € per benchmark point. These matter a lot for reasoning models (see the efficiency page of our post-training dashboard).</p></div>
+</div>
+
+<h3>Three families of scorers</h3>
+<table>
+<tr><th>Scorer</th><th>How</th><th>Strength</th><th>Weakness</th></tr>
+<tr><td>Reference-based</td><td>Compare to gold: log-likelihood ranking, exact match, F1, unit tests</td><td>Cheap, deterministic, reproducible</td><td>Format-sensitive; only works where a single right answer exists</td></tr>
+<tr><td>Model-based</td><td>Judge LLM or classifier (BERTScore, toxicity classifier, GPT-style judge)</td><td>Handles open-ended outputs</td><td>The judge has its own biases and variance</td></tr>
+<tr><td>Human</td><td>Raters, pairwise arenas</td><td>The ground truth for "is it good?"</td><td>Slow and expensive; rater agreement is often low</td></tr>
+</table>
+
+<div class="callout info"><span class="tag">Mental model</span>
+<p>For every number, ask four questions. <b>(1)</b> What exactly was the model asked? <b>(2)</b> How was the answer extracted? <b>(3)</b> How many items was it scored on? <b>(4)</b> Was it compared with other models on the same items under the same settings? If you cannot answer all four, the number is anecdotal.</p></div>
+</section>
+
+<!-- ============================================================ 2 -->
+<section id="s2">
+<h2><span class="num">2</span>lm-evaluation-harness anatomy</h2>
+<p class="lede">lm-eval turns a <b>dataset</b> into <b>requests</b>, sends them to a <b>model backend</b>, then <b>filters</b> and <b>scores</b> the responses and <b>aggregates</b> the scores into groups. Every task is a YAML file, sometimes with a small <code>utils.py</code> alongside.</p>
+
+<figure>
+<svg viewBox="0 0 860 210" role="img" aria-label="lm-eval pipeline">
+  <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="currentColor" style="color:var(--muted)"/></marker></defs>
+  <rect class="box" x="10" y="30" width="120" height="58" rx="8"/><text x="70" y="55" text-anchor="middle" font-weight="600">Dataset</text><text x="70" y="74" text-anchor="middle" class="small">HF hub / json</text>
+  <rect class="box a" x="160" y="30" width="140" height="58" rx="8"/><text x="230" y="52" text-anchor="middle" font-weight="600">Prompt build</text><text x="230" y="70" text-anchor="middle" class="small">doc_to_text / choice</text><text x="230" y="83" text-anchor="middle" class="small">few-shot · chat template</text>
+  <rect class="box a" x="330" y="30" width="130" height="58" rx="8"/><text x="395" y="55" text-anchor="middle" font-weight="600">Requests</text><text x="395" y="74" text-anchor="middle" class="small">output_type</text>
+  <rect class="box o" x="490" y="30" width="130" height="58" rx="8"/><text x="555" y="55" text-anchor="middle" font-weight="600">Backend</text><text x="555" y="74" text-anchor="middle" class="small">hf · vllm · API</text>
+  <rect class="box a" x="650" y="30" width="200" height="58" rx="8"/><text x="750" y="52" text-anchor="middle" font-weight="600">Filter → Metric</text><text x="750" y="70" text-anchor="middle" class="small">regex · take_first · majority</text><text x="750" y="83" text-anchor="middle" class="small">acc · exact_match · custom</text>
+  <path class="arr" d="M130 59 H156"/><path class="arr" d="M300 59 H326"/><path class="arr" d="M460 59 H486"/><path class="arr" d="M620 59 H646"/>
+  <rect class="box" x="560" y="130" width="290" height="58" rx="8"/><text x="705" y="153" text-anchor="middle" font-weight="600">Aggregate → results_*.json</text><text x="705" y="172" text-anchor="middle" class="small">mean + stderr · groups · n-shot · configs</text>
+  <path class="arr" d="M750 88 V126"/>
+  <rect class="box w" x="10" y="130" width="500" height="58" rx="8"/><text x="260" y="153" text-anchor="middle" font-weight="600">Every arrow is a place where scores can silently change</text><text x="260" y="172" text-anchor="middle" class="small">template whitespace · stop strings · extraction regex · metric scale · aggregation weights</text>
+</svg>
+<figcaption>The lm-eval data flow. Purple marks the part your own wrapper controls most: choosing the backend and routing requests to it.</figcaption>
+</figure>
+
+<h3>Key task-YAML fields</h3>
+<table>
+<tr><th>Field</th><th>Meaning</th></tr>
+<tr><td><code>dataset_path</code>, <code>dataset_name</code>, <code>dataset_kwargs</code></td><td>Passed to <code>datasets.load_dataset</code>. With <code>dataset_path: json</code>, <code>data_files</code> are loaded from URLs or paths.</td></tr>
+<tr><td><code>test_split</code> / <code>validation_split</code> / <code>fewshot_split</code></td><td>Where scored docs and few-shot examples come from. Never take few-shot examples from the test split.</td></tr>
+<tr><td><code>fewshot_config.sampler</code></td><td><code>first_n</code> is deterministic; the default samples randomly using the seed.</td></tr>
+<tr><td><code>output_type</code></td><td><code>multiple_choice</code> · <code>loglikelihood</code> · <code>loglikelihood_rolling</code> · <code>generate_until</code></td></tr>
+<tr><td><code>doc_to_text</code> / <code>doc_to_target</code> / <code>doc_to_choice</code></td><td>Jinja2 templates or <code>!function utils.fn</code>. Together they define the prompt.</td></tr>
+<tr><td><code>description</code>, <code>target_delimiter</code>, <code>fewshot_delimiter</code></td><td>The system-style preamble, the separator before the answer (default <code>" "</code>), and the separator between shots (default <code>"\n\n"</code>).</td></tr>
+<tr><td><code>generation_kwargs</code></td><td><code>until</code>, <code>max_gen_toks</code>, <code>temperature</code>, <code>do_sample</code>, … (generative tasks only)</td></tr>
+<tr><td><code>filter_list</code></td><td>Named pipelines (regex → take_first) that turn raw text into an answer. Each filter name produces its own metric key, e.g. <code>exact_match,strict-match</code>.</td></tr>
+<tr><td><code>metric_list</code></td><td>Metric, aggregation (<code>mean</code>, <code>nanmean</code>, …) and <code>higher_is_better</code>.</td></tr>
+<tr><td><code>process_docs</code> / <code>process_results</code></td><td>Python hooks for cleaning documents and for custom scoring.</td></tr>
+<tr><td>group + <code>aggregate_metric_list</code></td><td>Combines subtasks. Set <code>weight_by_size</code> to choose a micro-average (weighted by size) or a macro-average.</td></tr>
+</table>
+
+<div class="callout note"><span class="tag">Field note — a German MMLU task (multiple choice)</span>
+<pre><code>dataset_path: json
+test_split: test
+fewshot_split: dev
+fewshot_config: { sampler: first_n }
+output_type: multiple_choice
+doc_to_text: "{{ question.strip() }}\nA. {{ choices[0] }}\nB. …\nD. {{ choices[3] }}\nAntwort:"
+doc_to_choice: "{{ safe_choices }}"        <span class="c"># built in utils.process_docs</span>
+doc_to_target: "{% … %}{% if ans == 'A' %}0{% elif … %}{% else %}-1{% endif %}"
+metric_list: [{ metric: acc, aggregation: mean, higher_is_better: true }]
+dataset_kwargs:
+  data_files:
+    test: https://huggingface.co/datasets/openGPT-X/mmlux/<span class="h">resolve/main</span>/hendrycks_anatomy_DE_test.jsonl</code></pre>
+<p>Two things to notice. First, <code>doc_to_choice</code> uses the <i>answer texts</i>, not letters. The model is scored on the log-probability of the full answer text after "Antwort:", which is a cloze-style formulation with an MC-style prompt. Second, <code>resolve/main</code> is not pinned to a revision, so if the dataset repo changes, the test set changes with it.</p>
+</div>
+
+<details class="quiz"><summary>What does <code>doc_to_target</code> returning <code>-1</code> do?</summary><div>The target index is invalid, so the doc either errors or is always scored wrong, depending on the lm-eval version. It is a silent failure mode. A preflight validation pass that counts invalid targets before spending GPU hours should fail loudly.</div></details>
+</section>
+
+<!-- ============================================================ 3 -->
+<section id="s3">
+<h2><span class="num">3</span>The request types and why they matter</h2>
+<p class="lede">The single most important design choice in a benchmark is whether the model <i>ranks</i> given answers (log-likelihood) or <i>writes</i> its own answer (generation).</p>
+
+<h3>3.1 <code>multiple_choice</code> / <code>loglikelihood</code></h3>
+<p>For each choice <i>c</i>, lm-eval computes <code>log P(c | context)</code> as a sum of token log-probabilities and picks the highest. Nothing is generated, so the result is deterministic and cheap. It does not test whether the model could <i>produce</i> the answer.</p>
+<ul>
+<li><b><code>acc</code></b>: argmax of the raw summed log-probability. This is biased toward <i>short</i> choices, since fewer tokens means fewer negative terms in the sum.</li>
+<li><b><code>acc_norm</code></b>: argmax of the log-probability divided by the <i>character length</i> of the choice. This is the standard metric for HellaSwag and ARC, and it is what our task registry picks for them.</li>
+<li><b><code>acc_mutual_info</code></b>: subtracts the unconditional log P(c), which calibrates away the prior of each choice.</li>
+</ul>
+
+<div class="callout warn"><span class="tag">⚠ Pitfall — whitespace at the context/continuation boundary</span>
+<p>lm-eval builds <code>context + target_delimiter + choice</code>. If the context ends in a space (<code>"Antwort: "</code>), lm-eval moves the trailing space into the continuation so tokenisation stays natural. But a prompt that ends in a space <i>and</i> a delimiter of <code>" "</code> produces double spaces. Tokens such as <code>" B"</code> vs <code>"B"</code> have very different probabilities. One of our German tasks ends its prompt in <code>"Antwort: "</code>. Check the logged samples (<code>--log_samples</code>) to see exactly which strings were scored.</p></div>
+
+<h3>3.2 Three formulations of the same question (OLMES)</h3>
+<p>Our suite ships MMMLU-DE in three formulations. This matters because small models often score near chance on MC but well above chance on RC.</p>
+<table>
+<tr><th>Variant</th><th>Scored continuation</th><th>Best for</th></tr>
+<tr><td><code>_mc</code> (multiple choice)</td><td><code>" A"</code> / <code>" B"</code> … after listing options</td><td>Larger models that have learned the letter format</td></tr>
+<tr><td><code>_rc</code> (cloze / ranked classification)</td><td>The full answer text, no options listed</td><td>Small or early checkpoints; gives a smoother learning-curve signal</td></tr>
+<tr><td><code>_bpb</code> (bits-per-byte of the gold answer)</td><td>Only the gold answer, normalised per byte</td><td>Pre-training ablations: continuous and low-noise</td></tr>
+</table>
+<p>OLMES (Gu et al., 2024) reports both MC and RC and takes the max per model. Our generative-track suite configs currently reference none of these variants.</p>
+
+<h3>3.3 <code>generate_until</code></h3>
+<p>The model writes text until a stop string or <code>max_gen_toks</code>. Then filters extract an answer and metrics compare it with the gold answer. This is the only meaningful mode for chat, reasoning and tool-use models, and our post-training dashboard uses it exclusively.</p>
+
+<div class="callout note"><span class="tag">Field note — the stop-string bug that zeroed a BLEU score</span>
+<pre><code>generation_kwargs:
+  <span class="c"># Explicit empty `until`: without it lm-eval silently defaults to
+  # fewshot_delimiter "\n\n" as a stop string, truncating multi-paragraph
+  # summaries at the first blank line (cause of the bleu=0.0 anomaly).</span>
+  until: []
+  max_gen_toks: 49152</code></pre>
+<p>A good catch. <b>Generalise it:</b> for every generative task, inspect at least 20 logged samples and check whether outputs end where they should.</p></div>
+
+<div class="callout note"><span class="tag">Field note — strict vs flexible extraction</span>
+<pre><code>filter_list:
+  - name: "strict-match"
+    filter:
+      - { function: regex, regex_pattern: "(?:Die Antwort ist|The answer is) (\\-?[0-9\\.\\,]+)" }
+      - { function: take_first }
+  - name: "flexible-extract"
+    filter:
+      - { function: regex, group_select: -1, regex_pattern: "(-?[€$0-9.,]{2,})|(-?[0-9]+)" }
+      - { function: take_first }
+metric_list:
+  - { metric: exact_match, regexes_to_ignore: [",", "\\$", "€", "\\.$"] }</code></pre>
+<p><b>Strict</b> measures <i>format compliance and correctness together</i>. <b>Flexible</b> takes the last number and approximates correctness alone. A large gap between them means the model is right but ignores the format. Report both and understand the gap.</p>
+<p><b>German-specific pitfall:</b> removing <code>","</code> treats the German decimal comma as noise. "1,5" becomes "15", and "1.000" (German thousands) stays "1.000", which no longer matches "1000". Normalise numbers with a locale-aware parser instead of regex deletion.</p></div>
+
+<h3>3.4 <code>loglikelihood_rolling</code></h3>
+<p>Perplexity over a whole document. Bits-per-byte = total NLL (nats) / (ln 2 · bytes) is tokenizer-independent. Use it to compare models with different vocabularies; never compare raw per-token perplexities across tokenizers.</p>
+
+<details class="quiz"><summary>A base model scores 26% on MMLU-DE <code>_mc</code> and 41% on <code>_rc</code>. Is it bad at knowledge?</summary><div>Not necessarily. 25% is chance for 4 options, so on <code>_mc</code> it has probably not learned to map content to letters. The RC score shows it does prefer the correct answer text. Report RC for early checkpoints and switch to MC once the model is clearly above chance.</div></details>
+</section>
+
+<!-- ============================================================ 4 -->
+<section id="s4">
+<h2><span class="num">4</span>Models &amp; backends</h2>
+<table>
+<tr><th>Backend (<code>--model</code>)</th><th>Supports</th><th>Notes</th></tr>
+<tr><td><code>hf</code></td><td>loglikelihood + generation</td><td>Reference implementation and slowest. Use it to validate the others.</td></tr>
+<tr><td><code>vllm</code></td><td>loglikelihood + generation</td><td>Fast, uses prefix caching. Log-probabilities can differ slightly from <code>hf</code> (kernels, bf16).</td></tr>
+<tr><td><code>local-completions</code></td><td>loglikelihood (needs echo + logprobs) + generation</td><td>Raw text in, no chat template. Needs a tokenizer locally.</td></tr>
+<tr><td><code>local-chat-completions</code></td><td><b>generation only</b></td><td>The server applies the chat template. No log-probabilities, so MC tasks are impossible.</td></tr>
+</table>
+
+<div class="callout note"><span class="tag">Field note — routing by request type (a strong pattern)</span>
+<p>Our wrapper resolves each requested group to its leaf tasks, partitions them by <code>output_type</code>, and builds an <code>invocation_plan.json</code>. Generation goes to the chat API and log-likelihood goes to a raw-completions profile pinned to <code>apply_chat_template: false</code>. Generation runs first, so cheap results are saved before long MC runs. The split results are then merged back together.</p>
+<p>This is a good engineering design. It has one statistical consequence: <b>the same MC task scores differently depending on which path ran it.</b></p></div>
+
+<div class="callout warn"><span class="tag">⚠ Pitfall — the chat template changes log-likelihood scores</span>
+<p>With <code>apply_chat_template: true</code> (our base config turns it on for <code>vllm</code>), the MC context is wrapped as a user turn plus the assistant header. The answer is then scored at the start of an assistant turn, where the model expects "Sure! …" or <code>&lt;think&gt;</code>, not <code>" Paris"</code>. Through the raw-completions API the same task runs without a template. Never compare MC numbers across these two paths. Store <code>apply_chat_template</code> next to every score, and pick <b>one</b> convention per benchmark family (the common choice: no template for log-likelihood, template for generation).</p></div>
+
+<h3>Things to put in <code>model_args</code> deliberately</h3>
+<ul>
+<li><code>dtype</code> (bf16 vs fp16 vs fp8 quantisation changes scores, usually by &lt;1pp, sometimes more for reasoning)</li>
+<li><code>max_length</code>: context truncation silently cuts off long few-shot prompts on the left</li>
+<li><code>tensor_parallel_size</code>, <code>gpu_memory_utilization</code>: speed only, but batch composition can change floating-point results</li>
+<li>Adapters: our wrapper <b>silently ignored PEFT adapters for vllm and API backends</b> — a bug worth failing loudly on. Merge LoRA weights before evaluating, or raise an error.</li>
+</ul>
+</section>
+
+<!-- ============================================================ 5 -->
+<section id="s5">
+<h2><span class="num">5</span>Prompting choices</h2>
+<p class="lede">Prompt format alone can move MC accuracy by 5–10pp on small models (Sclar et al., 2023, "Quantifying LMs' sensitivity to spurious features in prompt design"). Treat the prompt as part of the benchmark definition.</p>
+
+<h3>Few-shot vs zero-shot</h3>
+<ul>
+<li><b>Base models</b>: few-shot (typically 5 for MMLU, 8 for GSM8K CoT) shows them the format.</li>
+<li><b>Chat / reasoning models</b>: zero-shot with the chat template is how they are actually used. Our dashboard uses 0-shot everywhere.</li>
+<li><code>fewshot_as_multiturn</code>: presents each shot as a user/assistant turn pair instead of one long user message. It matters when <code>apply_chat_template</code> is on. Our base config's comment says it defaults on together with the chat template — check the behaviour of your installed lm-eval version and log the effective value.</li>
+<li><code>num_fewshot: null</code> in a base config means "use each task's own default". That is fine, but record the effective <code>n-shot</code> from <code>results_*.json</code> in every summary.</li>
+</ul>
+
+<h3>Thinking models</h3>
+<p>Reasoning models (Qwen3, gpt-oss, our own checkpoints) emit <code>&lt;think&gt;…&lt;/think&gt;</code> before the answer. Consequences:</p>
+<ul>
+<li><b>Token budget:</b> too small a <code>max_gen_toks</code> cuts off the reasoning, so no answer is produced and the item is scored wrong. Our configs ship 49,152-token budgets in some places and 131,072 in others. A truncation rate above about 1% means the budget, not the model, sets the score.</li>
+<li><b>Strip the think block</b> before extraction, or the regex may pick a number from the reasoning.</li>
+<li><code>enable_thinking: false</code> via <code>chat_template_kwargs</code>: some of our task YAMLs set it with "REMOVE for hf/vllm" comments while the backend was vllm. The logs filled with hundreds of <i>"API returned null content"</i> warnings. Null outputs are scored as wrong, or as <b>non-toxic</b> in the toxicity task, which inflates safety.</li>
+</ul>
+
+<div class="callout warn"><span class="tag">⚠ Pitfall — format artefacts that differ between languages</span>
+<p>One of our German ARC task sanitisers prefixes every choice with <code>"Option: "</code> (and empty choices become <code>"Option: (leer)"</code>). The English ARC tasks have no prefix. Any "EN vs DE gap" on ARC therefore mixes language ability with a format change. Fix: apply the same sanitiser to both languages, or only substitute empty choices.</p></div>
+
+<details class="quiz"><summary>Your GSM8K-DE score drops 12pp after switching from vllm to the chat API. Name three suspects.</summary><div>(1) The chat template or few-shot-as-multiturn changed the prompt. (2) Thinking was enabled on one path, so the budget truncated or content came back null. (3) Stop strings (<code>"Frage:"</code>, <code>&lt;|im_end|&gt;</code>) behave differently when the server applies the template. Diff the logged samples for the same doc_id before blaming the model.</div></details>
+</section>
+
+<!-- ============================================================ 6 -->
+<section id="s6">
+<h2><span class="num">6</span>Metrics in depth</h2>
+<table>
+<tr><th>Metric</th><th>Definition</th><th>Gotchas</th></tr>
+<tr><td><code>acc</code> / <code>acc_norm</code></td><td>Fraction where argmax log P matches the gold choice</td><td>acc favours short choices; acc_norm uses character-length normalisation</td></tr>
+<tr><td><code>exact_match</code></td><td>Normalised string equality after filtering</td><td>Depends entirely on the extraction regex and the ignore rules</td></tr>
+<tr><td>SQuAD F1 / <code>best_f1</code></td><td>Token-overlap F1; <code>best_f1</code> tunes the no-answer threshold</td><td><code>best_f1</code> is tuned on the test set itself, so it is optimistic. Scale is 0–100.</td></tr>
+<tr><td><code>pass@k</code></td><td>P(at least one of k samples passes the tests)</td><td>Use the unbiased estimator (below); do not take k samples and check whether any passes</td></tr>
+<tr><td><code>avg@k</code> / <code>avg_pass@1</code></td><td>Mean pass@1 over k rollouts</td><td>Reduces sampling noise per item, but not the noise from having few items</td></tr>
+<tr><td>BLEU / ROUGE</td><td>n-gram overlap</td><td>Scales of 0–1 vs 0–100; corpus vs sentence level; tokeniser</td></tr>
+<tr><td>BERTScore / BLEURT</td><td>Embedding similarity / learned metric</td><td>Model-dependent; the "rescaled" variant can be negative</td></tr>
+<tr><td>IFEval <code>prompt/inst_level_loose/strict_acc</code></td><td>Verifiable instruction constraints</td><td>Report one variant consistently (the dashboard uses loose)</td></tr>
+<tr><td>Classifier scores (toxicity)</td><td>P(toxic) from a classifier</td><td>Classifier domain and language (an English Jigsaw classifier on German text)</td></tr>
+</table>
+
+<h3>The unbiased pass@k estimator (Chen et al., 2021)</h3>
+<p>Generate <i>n ≥ k</i> samples per problem and count <i>c</i> correct:</p>
+<pre><code>pass@k = 1 − C(n−c, k) / C(n, k)       <span class="c"># averaged over problems</span>
+
+import numpy as np
+def pass_at_k(n, c, k):
+    if n - c &lt; k: return 1.0
+    return 1.0 - np.prod(1.0 - k / np.arange(n - c + 1, n + 1))</code></pre>
+<div class="calc" id="passk">
+  <div class="row">
+    <label>samples n<input type="number" id="pk_n" value="10" min="1"></label>
+    <label>correct c<input type="number" id="pk_c" value="3" min="0"></label>
+    <label>k<input type="number" id="pk_k" value="5" min="1"></label>
+  </div>
+  <div class="out" id="pk_out"></div>
+</div>
+
+<h3>Answer extraction for maths</h3>
+<p>We score AIME with <code>math_verify</code>. It parses <code>\boxed{…}</code> and compares the answers <i>symbolically</i> (so <code>1/2</code> = <code>0.5</code> = <code>\frac{1}{2}</code>). String exact-match on maths underestimates strong models, and the size of the error grows with how creatively the model formats its answers.</p>
+
+<div class="callout warn"><span class="tag">⚠ Pitfall — the rouge_score tokenizer and German</span>
+<p>Google's <code>rouge_score</code> default tokenizer lowercases and replaces every non-<code>[a-z0-9]</code> character with a space. "Gemäß" becomes "gem ß"… and the umlauts are gone. One of our public-sector summarisation tasks uses it without a custom tokenizer. For German, pass a whitespace or Unicode-aware tokenizer (<code>RougeScorer(..., tokenizer=...)</code>) or use a multilingual implementation.</p></div>
+</section>
+
+<!-- ============================================================ 7 -->
+<section id="s7">
+<h2><span class="num">7</span>Evaluating post-training</h2>
+<p class="lede">Post-training evaluation answers a different question from pre-training evaluation. The question is not "how much does the model know" but <i>did this stage help, what did it cost, and what did it break?</i></p>
+
+<figure>
+<svg viewBox="0 0 860 120" role="img" aria-label="post-training stage chain">
+  <g font-size="13">
+  <rect class="box" x="5" y="35" width="92" height="44" rx="8"/><text x="51" y="62" text-anchor="middle">Mid-train</text>
+  <rect class="box" x="113" y="35" width="70" height="44" rx="8"/><text x="148" y="62" text-anchor="middle">SFT</text>
+  <rect class="box" x="199" y="35" width="96" height="44" rx="8"/><text x="247" y="56" text-anchor="middle">Priming</text><text x="247" y="71" text-anchor="middle" class="small">DPO</text>
+  <rect class="box a" x="311" y="35" width="76" height="44" rx="8"/><text x="349" y="62" text-anchor="middle">RLVR</text>
+  <rect class="box a" x="403" y="35" width="76" height="44" rx="8"/><text x="441" y="62" text-anchor="middle">OPSD</text>
+  <rect class="box a" x="495" y="35" width="112" height="44" rx="8"/><text x="551" y="62" text-anchor="middle">RLVR+ProRew</text>
+  <rect class="box o" x="623" y="35" width="70" height="44" rx="8"/><text x="658" y="62" text-anchor="middle">Soup</text>
+  <rect class="box" x="709" y="35" width="60" height="44" rx="8"/><text x="739" y="62" text-anchor="middle">DPO</text>
+  <rect class="box" x="785" y="35" width="70" height="44" rx="8"/><text x="820" y="62" text-anchor="middle">RLHF</text>
+  <path class="arr" d="M97 57 H109"/><path class="arr" d="M183 57 H195"/><path class="arr" d="M295 57 H307"/><path class="arr" d="M387 57 H399"/><path class="arr" d="M479 57 H491"/><path class="arr" d="M607 57 H619"/><path class="arr" d="M693 57 H705"/><path class="arr" d="M769 57 H781"/>
+  <text x="430" y="104" text-anchor="middle" class="small">Evaluate every arrow: Δ capability, Δ safety, Δ tokens/answer, on the SAME benchmark set</text>
+  </g>
+</svg>
+<figcaption>The post-training stage order we evaluate. A soup is a weighted average of weights, e.g. 0.75 × RLVR·500 + 0.25 × RLVR·700.</figcaption>
+</figure>
+
+<h3>Our dashboard's evaluation paradigm</h3>
+<ul>
+<li><b>Generation only.</b> No log-likelihood scoring and no <code>acc_norm</code>. A reasoning model's log-probabilities over answer letters do not reflect how it is used.</li>
+<li><b>Sampling:</b> temperature 0.6, top_p 0.95 (the vendor-recommended settings for reasoning models; greedy decoding often loops), 0-shot, no system prompt, think template.</li>
+<li><b>Repeated rollouts</b> for small benchmarks: AIME avg@8, code pass@10.</li>
+<li><b>Agentic and tool use:</b> BFCL (AST and executable matching), SWE-bench (resolve rate), τ² (<code>pass^1</code>).</li>
+<li><b>Safety as higher-is-better:</b> 1 − ASR, 1 − over-refusal, and WMDP shown as 1 − acc (so lower dangerous knowledge counts as better).</li>
+<li><b>Reward-hacking probes:</b> hack resistance on SLR-Bench, ImpossibleBench rates conditioned on solved problems. Checking for reward hacking is essential after RLVR.</li>
+<li><b>Per-model exceptions ledger:</b> e.g. <code>repetition_penalty 1.1</code> for models that loop. Being transparent about these is excellent practice, but every exception is a confounder.</li>
+</ul>
+
+<div class="callout ok"><span class="tag">✓ Good practice in the dashboard</span>
+<p>Several things are worth copying: an explicit <b>defined set</b> of benchmarks per track, so missing cells are not averaged away; <b>display-only</b> rows for contaminated or inverted benchmarks (GPQA, WMDP); hatched "not run" vs ⊘ "skipped on purpose" cells; and <b>matched EN–DE pairs</b> for language-gap claims.</p></div>
+
+<h3>What to look for when evaluating a stage</h3>
+<ul>
+<li><b>Alignment tax:</b> RLHF or DPO raises chat and win-rate scores but lowers maths and code. Always show the capability <i>and</i> helpfulness deltas side by side.</li>
+<li><b>Verbosity drift:</b> RL tends to lengthen answers. Plot score against tokens per answer (the dashboard's token-vs-score Pareto). A gain bought with 3× the tokens may not be worth deploying.</li>
+<li><b>Reward hacking:</b> rising verifiable-reward benchmarks together with falling hack-resistance or IFEval strict scores.</li>
+<li><b>Safety regressions:</b> over-refusal and attack success both move after DPO. Report both directions.</li>
+<li><b>Soups:</b> a weight average should sit on or above the line between its parents. If not, the checkpoints are in different basins.</li>
+</ul>
+</section>
+
+<!-- ============================================================ 8 -->
+<section id="s8">
+<h2><span class="num">8</span>LLM-as-a-judge</h2>
+<p class="lede">Judges make open-ended evaluation scalable. They are also a second model with its own biases, so treat the judge as an instrument that needs calibrating.</p>
+
+<div class="grid2">
+  <div class="card"><h4>Single-answer grading</h4><p>Score each response on a 1–10 scale (MT-Bench). Simple, but scores drift with the judge's mood and prompt; resolution is poor near the top.</p></div>
+  <div class="card"><h4>Pairwise comparison</h4><p>"Which response is better, A or B?" against a fixed baseline (AlpacaEval, Arena-Hard). More reliable; outputs a win rate.</p></div>
+</div>
+
+<h3>Known judge biases &amp; mitigations</h3>
+<table>
+<tr><th>Bias</th><th>Mitigation</th></tr>
+<tr><td>Position bias (prefers the first answer)</td><td>Judge both orders; count inconsistent pairs as ties</td></tr>
+<tr><td>Verbosity / length bias</td><td>Length-controlled win rate (AlpacaEval LC: a GLM regresses out the length difference); style control (Arena)</td></tr>
+<tr><td>Self-preference (judge favours its own family)</td><td>Use a judge from a different family from the evaluated models; cross-check with a second judge</td></tr>
+<tr><td>Grader deviation from the official protocol</td><td>Use the official judge prompt and classes; otherwise label the score "-like"</td></tr>
+<tr><td>Run-to-run variance</td><td>Repeat judging ≥3×, report mean ± std; use temperature 0 for the judge where possible</td></tr>
+</table>
+
+<div class="callout note"><span class="tag">Field note — judges in our dashboard</span>
+<ul>
+<li>AlpacaEval LC is judged locally by Qwen2.5-32B; Arena-Hard v2 and SimpleQA by a Qwen3-27B-class model. <b>These are not the official judges</b>, so the absolute numbers are not comparable with public leaderboards. Relative rankings within our board are still valid.</li>
+<li>SimpleQA uses a <b>binary</b> prompt instead of the official 3-class grader (correct / incorrect / not attempted). This merges "abstained" into "wrong", which removes the calibration signal that SimpleQA was designed to measure.</li>
+<li>MT-Bench 1–10 is stored ×10 so it fits the 0–1 board. This is fine, but a 1–10 score of 1 maps to 0.1, not 0, so its floor is not comparable with accuracies.</li>
+<li>Vibe check: 112 prompts, 5 judge runs, mean ± std. This is <b>the only place in the dashboard with an error bar</b>, and the judge itself warns of 16–60% swings. Some hard-coded fallback numbers in the page's JavaScript are stale compared with the live judge summary.</li>
+</ul></div>
+
+<h3>How to validate a judge (do this once per judge × task)</h3>
+<ol>
+<li>Have humans label 100–200 pairs.</li>
+<li>Measure judge–human agreement (Cohen's κ, or accuracy on non-tie pairs) and judge–judge agreement across two runs.</li>
+<li>Swap positions and measure the inconsistency rate.</li>
+<li>Correlate win rate with response length. If ρ &gt; 0.5, length control is mandatory.</li>
+</ol>
+</section>
+
+<!-- ============================================================ 9 -->
+<section id="s9">
+<h2><span class="num">9</span>Statistics &amp; error bars — the expert's edge</h2>
+<p class="lede">Most published LLM comparisons are inside the noise. The engineers who know how large the noise is make far fewer wrong calls. Required reading: Miller (2024), <i>"Adding Error Bars to Evals"</i>.</p>
+
+<h3>9.1 Standard error of an accuracy</h3>
+<pre><code>SE = sqrt( p · (1 − p) / n )          95% CI ≈ p ± 1.96 · SE</code></pre>
+<div class="calc" id="ci">
+  <div class="row">
+    <label>accuracy p<input type="number" id="ci_p" value="0.50" step="0.01" min="0" max="1"></label>
+    <label>items n<input type="number" id="ci_n" value="30" min="1"></label>
+  </div>
+  <div class="bar" id="ci_bar"><span></span><i></i></div>
+  <div class="out" id="ci_out"></div>
+</div>
+<p>Try <b>n = 30</b> (AIME): at p = 0.5, the 95% CI is <b>±18pp</b>. Even with avg@8 rollouts this shrinks only a little, because the uncertainty comes mainly from <i>which 30 problems</i> were chosen, not from sampling. MT-Bench with n = 80 gives roughly ±11pp on a binary-equivalent scale. A dashboard that prints ±0.1pp deltas on these benchmarks is showing noise.</p>
+
+<h3>9.2 Comparing two models: use paired tests</h3>
+<p>Both models answer the <i>same</i> questions, so their errors are correlated. The paired standard error is much smaller than the unpaired one:</p>
+<pre><code>d_i  = score_A(i) − score_B(i)           <span class="c"># per item, from --log_samples</span>
+Δ    = mean(d_i)
+SE_Δ = std(d_i, ddof=1) / sqrt(n)        <span class="c"># paired SE</span>
+<span class="c"># Unpaired (wrong for same-item comparisons): sqrt(SE_A² + SE_B²)</span>
+<span class="c"># For binary outcomes the paired version is McNemar's test.</span></code></pre>
+<p><b>Minimum detectable effect</b> at 80% power and α = 0.05 is about <code>2.8 · SE_Δ</code>. On a 1,000-item benchmark with ~15% disagreeing items, the MDE is about 2pp. On AIME it is more than 15pp.</p>
+
+<h3>9.3 Clustered questions</h3>
+<p>If items come in clusters (several questions on one passage, or 57 MMLU subjects), they are not independent. Use clustered standard errors or a cluster bootstrap. Naive SE underestimates the error, by 3× in some reading-comprehension sets according to Miller (2024).</p>
+
+<h3>9.4 Combining standard errors across subtasks</h3>
+<pre><code><span class="c"># Mean of K independent subtask scores, equal weights:</span>
+SE_mean = sqrt( Σ SE_k² ) / K            <span class="c"># NOT mean(SE_k)</span>
+<span class="c"># Weighted:  SE = sqrt( Σ w_k² · SE_k² )  with Σ w_k = 1</span>
+<span class="c"># Or: bootstrap — resample items within each task, recompute the full aggregate, take percentiles.</span></code></pre>
+<div class="callout warn"><span class="tag">⚠ Field note — the mean-of-standard-errors bug</span>
+<pre><code>"stderr": float(fmean(stderrs)) if stderrs else None,</code></pre>
+<p>This one line, in two places of our aggregation code, computes a group's stderr as the <i>mean</i> of the subtask stderrs. For K subtasks, the mean of their SEs <b>overestimates</b> the SE of their mean by about √K. Use the formula above. Category and overall scores had no SE at all. Our exported results contained no SEs either, and 42 of 151 tasks had <code>n: null</code>, so not even a binomial SE could be reconstructed.</p></div>
+
+<h3>9.5 Run-to-run noise</h3>
+<p>With temperature 0.6, rerunning the same model gives a different score. Estimate this once per benchmark: run 3–5 seeds and compute the std. A difference between checkpoints smaller than 2× the seed std is not evidence of anything. For checkpoint selection, prefer benchmarks with high <i>signal-to-noise</i> (spread between models ÷ seed noise). This is the OLMo / DataDecide approach for choosing evals.</p>
+
+<details class="quiz"><summary>Checkpoint B beats A by +1.2pp on a 500-item benchmark (both ~70%). Report it?</summary><div>Unpaired SE ≈ √(2·0.7·0.3/500) ≈ 2.9pp, so the 95% CI of the difference is about ±5.7pp unpaired. A paired test may shrink this to around ±2–3pp, which still contains 0. Report "no significant difference", or collect more items or seeds.</div></details>
+</section>
+
+<!-- ============================================================ 10 -->
+<section id="s10">
+<h2><span class="num">10</span>Aggregation &amp; leaderboards</h2>
+<p class="lede">An "overall score" is an opinion expressed as arithmetic. Make the opinion explicit: what is the denominator, what are the weights, and are the scales the same?</p>
+
+<h3>10.1 The denominator rule</h3>
+<p><b>Two models can only be compared on the intersection of the benchmarks they were both evaluated on.</b> Averaging each model over "whatever it has" turns differences in coverage into apparent differences in capability.</p>
+<div class="callout note"><span class="tag">Field note — a real example</span>
+<p>In our dashboard, one RLVR checkpoint scored on 171 benchmarks against an SFT stage scored on far fewer reads <b>+0.5 on its own coverage and −5.1 on the 114 benchmarks the whole chain shares</b>. Same checkpoint, opposite conclusions. Elsewhere a mid→final delta read +25.4pp on own coverage instead of the true +7.4pp.</p>
+<p>The default comparison view still showed each model on its own coverage. Make the shared basis the default for any view that ranks models or shows deltas.</p></div>
+
+<h3>10.2 Flat vs hierarchical (balanced) means</h3>
+<div class="grid2">
+  <div class="card"><h4>Flat (micro over tasks)</h4><p>One mean over all benchmarks. Large families dominate: about 54 multilingual variants weigh 54× as much as SWE-bench.</p></div>
+  <div class="card"><h4>Balanced (hierarchical)</h4><p>benchmark → category → supergroup → overall. Each capability gets equal weight, but every task must belong to exactly one leaf of the hierarchy.</p></div>
+</div>
+
+<div class="callout warn"><span class="tag">⚠ Field note — membership bugs that silently re-weight the overall</span>
+<ul>
+<li><b>Double counting:</b> one of our supergroups contains <code>multi_turn</code>, but only <code>multilingual</code>/<code>german</code> are listed in its cross-cutting set. MTBench (also <code>chat</code>) and BFCL multi-turn (also <code>agentic_code</code>) are therefore counted twice in the Balanced overall. <code>longctx</code> and <code>translation</code> deserve the same audit.</li>
+<li><b>Silent drops:</b> 33 tasks had a <code>cat</code> value missing from their category list (e.g. a Spanish AIME variant tagged <code>math</code> but listed under <code>[multilingual]</code>). Aggregation used the list, so these dropped out of Balanced but counted in Flat.</li>
+<li><b>Orphans:</b> six scored tasks (HellaSwag and three TruthfulQA variants among them) had no entry in the task registry at all and were silently ignored.</li>
+</ul>
+<p>Fix: a unit test asserting that every scored task belongs to exactly one non-crosscut leaf (or is explicitly excluded), and that every category value is registered.</p></div>
+
+<h3>10.3 Never average different scales</h3>
+<div class="callout warn"><span class="tag">⚠ Field note — the "&gt;1 means percent" heuristic</span>
+<pre><code>def _normalize_for_harmonized_mean(score: float) -&gt; float:
+    return score / 100.0 if score &gt; 1.0 else score</code></pre>
+<p>A BLEU of 0.8 on a 0–100 scale stays 0.8 and is read as 80%. A GermanQuAD F1 of 0.9 (0–100 scale) also stays 0.9. Rescaled BERTScore can be negative. The resulting category mean combines accuracy, BLEU-acc, BERTScore and 1 − toxicity. <b>Fix:</b> declare each metric's scale and chance level in a registry, and normalise explicitly.</p></div>
+
+<h3>10.4 Normalise for chance</h3>
+<p>A 4-way MC task has a 25% floor and a free-form maths task has a 0% floor. Averaging raw scores rewards tasks with a high floor. The HF Open LLM Leaderboard v2 approach rescales each task with <code>(score − chance) / (1 − chance)</code> before averaging.</p>
+
+<h3>10.5 Alternatives to a single mean</h3>
+<ul>
+<li><b>Mean rank / win rate across tasks</b> (HELM): robust to scale, but depends on which models are on the board.</li>
+<li><b>Bradley–Terry / Elo</b> over pairwise battles (Chatbot Arena), with bootstrap CIs.</li>
+<li><b>Pareto frontiers</b> (score against cost or tokens) instead of a single ranking. Our efficiency page does this well.</li>
+</ul>
+</section>
+
+<!-- ============================================================ 11 -->
+<section id="s11">
+<h2><span class="num">11</span>Contamination &amp; data hygiene</h2>
+<p class="lede">If test items, or close paraphrases, were in the training data, the benchmark measures memorisation.</p>
+<h3>Detection techniques</h3>
+<ul>
+<li><b>n-gram overlap</b> (e.g. 13-gram) between the training corpus and test items: the GPT-3 / Llama approach. lm-eval's <code>should_decontaminate</code> + <code>doc_to_decontamination_query</code> only <i>marks</i> the query; you still have to run the overlap pipeline.</li>
+<li><b>Perturbation tests:</b> rephrase or renumber items (GSM-Symbolic, GSM8K-Platinum) and see whether accuracy drops.</li>
+<li><b>Min-K% probability</b> and similar membership-inference signals.</li>
+<li><b>Time-split benchmarks</b> (LiveCodeBench, AIME by year): only count items published after the training cutoff.</li>
+</ul>
+<div class="callout note"><span class="tag">Field note — what this looked like in our stack</span>
+<ul>
+<li>Dashboard: contaminated GPQA is <b>display-only</b>, kept out of averages. Good.</li>
+<li>Two internal tasks evaluate on the <b>train split</b>; one test set is LLM-generated and LLM-filtered (so it is biased toward models similar to the generator); another use-case set is 20 pairs from the same family as the SFT data. Label these as <i>in-distribution checks</i>, not held-out evals.</li>
+<li>Datasets loaded from <code>resolve/main</code> without a revision: pin <code>revision=&lt;commit&gt;</code> so the test set is fixed.</li>
+</ul></div>
+</section>
+
+<!-- ============================================================ 12 -->
+<section id="s12">
+<h2><span class="num">12</span>Reproducibility &amp; operations</h2>
+<h3>What every result file should carry</h3>
+<ul>
+<li>Model ID <b>and revision or hash</b>, adapter, dtype or quantisation</li>
+<li>lm-eval version (one of our environments pinned 0.4.13 while another had 0.4.11 — and task defaults change between releases), backend, vllm version</li>
+<li>Effective prompt settings: chat template, few-shot count, fewshot_as_multiturn, gen_kwargs, think on/off</li>
+<li>Seeds (<code>--seed</code>), <code>limit</code>, dataset revisions</li>
+<li>Logged samples (<code>--log_samples</code>). Our wrapper always passes this, which is excellent: it enables paired tests and error analysis.</li>
+</ul>
+
+<div class="callout warn"><span class="tag">⚠ Field note — smoke runs overwrite full runs</span>
+<pre><code>limit: 10 # set null for entire dataset</code></pre>
+<p>This was our committed default: <b>10 documents per task</b>. The output folder hash covered only model and adapter, and the summary read the <b>newest</b> <code>results_*.json</code>. So a smoke run after a full run replaced its numbers in the summary without any warning. Fixes: default <code>limit: null</code>; include <code>limit</code>, backend and chat-template settings in the run hash; refuse to summarise results that have <code>limit</code> set unless a <code>--smoke</code> flag is given.</p></div>
+
+<div class="callout warn"><span class="tag">⚠ Field note — no seed, no gen_kwargs</span>
+<p>Our command builder never passed <code>--seed</code> or <code>--gen_kwargs</code>. lm-eval has default seeds, but API backends are non-deterministic anyway. Pass the seed explicitly and record it. Make decoding settings explicit per suite instead of per task YAML. For example, one summarisation task set <code>top_p</code> without <code>temperature</code>.</p></div>
+
+<h3>Operational patterns worth keeping</h3>
+<ul>
+<li>A <b>preflight check</b>: validates MC docs and tokenises continuations the way lm-eval does before GPU hours are spent.</li>
+<li>An <b>invocation plan</b> plus the exact command files: a precise record of what ran.</li>
+<li>Suite configs with <code>base_config:</code> inheritance and pydantic validation.</li>
+<li>A SLURM suite runner + smoke runner. Ordering suites from cheap to expensive surfaces failures early.</li>
+<li>API client hardening (timeouts, backoff).</li>
+</ul>
+
+<h3>Efficiency is part of the evaluation</h3>
+<p>For reasoning models, report <b>tokens per answer</b> and cost next to accuracy. Our dashboard's efficiency page and token-vs-score Pareto do this. But check the constants: at one point the same page used 240 W in one place and 200 W in another for the same hardware. Constants deserve the same review as scores.</p>
+</section>
+
+<!-- ============================================================ 13 -->
+<section id="s13">
+<h2><span class="num">13</span>Multilingual &amp; German evaluation</h2>
+<ul>
+<li><b>Machine-translated benchmarks</b> (MMLU-X, ARC-X, HellaSwag-X, GSM8K-X, TruthfulQA-X from OpenGPT-X) carry translation errors, cultural mismatch (US law in MMLU), and formatting artefacts (the <code>"Option: "</code> prefix, <code>"(leer)"</code> placeholders, <code>"Choice: (empty)"</code> padding).</li>
+<li><b>Language-gap claims need matched pairs:</b> the dashboard's EN–DE comparison only pairs benchmarks that exist in both languages and requires at least eight of them. This is the right approach.</li>
+<li><b>Native German benchmarks</b> carry more weight than translations: GermanQuAD, EUR-Lex-Sum DE, public-sector tasks, GermanPartiesQA.</li>
+<li><b>Tokenizer fairness:</b> German produces more tokens per word with English-centric tokenizers. Token budgets truncate German answers earlier, and per-token perplexity is not comparable across languages (use bits-per-byte).</li>
+<li><b>Metrics:</b> use Unicode-safe tokenisation (ROUGE), locale-aware number parsing (decimal comma), and language-appropriate classifiers (toxicity).</li>
+</ul>
+<div class="callout note"><span class="tag">Field note — GermanQuAD &amp; GermanPartiesQA</span>
+<ul>
+<li>GermanQuAD's custom <code>task.py</code> hardcodes its own generation kwargs, so the YAML <code>generation_kwargs</code> are ignored (the logs showed a 256-token / <code>"\n\n"</code> default). No-answer detection is a substring check for <code>"unanswerable"</code>, which a German-answering model will never write.</li>
+<li>GermanPartiesQA uses English labels in a German prompt, ends with <code>"Antwort: "</code> (trailing space), and has no calibration. Party-alignment scores are therefore sensitive to the prior of each label. Consider <code>acc_mutual_info</code> or permuting the label order.</li>
+</ul></div>
+</section>
+
+<!-- ============================================================ 14 -->
+<section id="s14">
+<h2><span class="num">14</span>Fifteen lessons from auditing a real eval stack</h2>
+<p class="lede">Findings from auditing our own eval runner and results dashboard, ranked by how much they could change a conclusion. Every one was checked against the source or the exported results.</p>
+<table>
+<tr><th>#</th><th>Sev.</th><th>Where</th><th>Issue</th><th>Fix</th></tr>
+<tr><td>1</td><td><span class="sev hi">high</span></td><td>results export</td><td>No SE / CI on any benchmark score; 42 tasks with <code>n: null</code>; ±0.1pp deltas and ranks shown</td><td>Export n + stderr; show CIs; grey out deltas inside the CI; paired tests from samples</td></tr>
+<tr><td>2</td><td><span class="sev hi">high</span></td><td>comparison view</td><td>Default overall mixes coverage, which can flip the sign of a stage delta</td><td>Default to the shared or "complete" basis for any ranked or delta view</td></tr>
+<tr><td>3</td><td><span class="sev hi">high</span></td><td>suite base config</td><td><code>limit: 10</code> committed; results not keyed by limit; newest file wins</td><td><code>limit: null</code>; add limit/backend/template to the run hash; block summaries of limited runs</td></tr>
+<tr><td>4</td><td><span class="sev hi">high</span></td><td>backend routing</td><td>MC scored with the chat template on vllm and without it via the API: incomparable numbers</td><td>One template convention per request type; store it with each score</td></tr>
+<tr><td>5</td><td><span class="sev hi">high</span></td><td>aggregation code</td><td><code>&gt;1 → /100</code> heuristic; mixed metric scales averaged</td><td>Metric registry with scale, chance and direction</td></tr>
+<tr><td>6</td><td><span class="sev md">med</span></td><td>hierarchy config</td><td><code>multi_turn</code> double-counted in Balanced; 33 tasks with unregistered categories dropped</td><td>Membership invariant test</td></tr>
+<tr><td>7</td><td><span class="sev md">med</span></td><td>group stderr</td><td>Mean of stderrs used as the group stderr</td><td><code>sqrt(ΣSE²)/K</code> or bootstrap</td></tr>
+<tr><td>8</td><td><span class="sev md">med</span></td><td>generation pipeline</td><td>Null API content scored as wrong, or as non-toxic</td><td>Count nulls separately; fail the run above a threshold; fix <code>enable_thinking</code> per backend</td></tr>
+<tr><td>9</td><td><span class="sev md">med</span></td><td>task data</td><td>Train-split evals; LLM-generated test sets; unpinned dataset revisions</td><td>Label as in-distribution; pin revisions; run decontamination</td></tr>
+<tr><td>10</td><td><span class="sev md">med</span></td><td>task sanitisation</td><td><code>"Option: "</code> prefix in DE only, which confounds EN–DE comparisons</td><td>Same sanitiser for both languages</td></tr>
+<tr><td>11</td><td><span class="sev md">med</span></td><td>ROUGE tokeniser</td><td>Umlauts lost by the default tokenizer</td><td>Custom tokenizer</td></tr>
+<tr><td>12</td><td><span class="sev md">med</span></td><td>judges</td><td>Non-official judges; SimpleQA binary grader; no judge validation</td><td>Label as "-like"; validate against humans; repeat judging</td></tr>
+<tr><td>13</td><td><span class="sev lo">low</span></td><td>command builder</td><td>No <code>--seed</code>; PEFT adapters silently ignored for vllm/API</td><td>Pass the seed; raise an error when an adapter is set on an unsupported backend</td></tr>
+<tr><td>14</td><td><span class="sev lo">low</span></td><td>dashboard JS</td><td>Value &gt; 1 unchecked; 6 orphan scored tasks; stale hard-coded numbers</td><td>Schema validation in the exporter</td></tr>
+<tr><td>15</td><td><span class="sev lo">low</span></td><td>docs &amp; README</td><td>Unresolved merge markers; stale backend docs; viz scripts expect the old layout</td><td>Clean up; CI check for <code>&lt;&lt;&lt;&lt;&lt;&lt;&lt;</code></td></tr>
+</table>
+</section>
+
+<!-- ============================================================ 15 -->
+<section id="s15">
+<h2><span class="num">15</span>Expert checklist &amp; learning roadmap</h2>
+<h3>Pre-flight checklist for any eval run</h3>
+<ul class="check">
+<li>Benchmark set fixed in advance (a defined set per track), dataset revisions pinned</li>
+<li>Prompt convention decided: chat template, few-shot count, multiturn, think on/off</li>
+<li>Token budget large enough: truncation rate &lt; 1% on a pilot run</li>
+<li>Extraction verified on 20 logged samples per task (strict vs flexible gap understood)</li>
+<li>Metric scale, chance level and direction registered for every task</li>
+<li><code>limit</code> = null, seed set, versions recorded, <code>--log_samples</code> on</li>
+<li>Comparisons on a shared item set; paired SE or bootstrap CI reported</li>
+<li>Seed noise known for each benchmark used in checkpoint selection</li>
+<li>Judges: official prompt (or labelled), both orders, length control, ≥3 runs</li>
+<li>Aggregation invariants tested (no double counting, no orphans, values in range)</li>
+<li>Contamination status noted per benchmark; train-split checks labelled as such</li>
+</ul>
+
+<h3>Roadmap to expertise</h3>
+<ol>
+<li><b>Week 1: mechanics.</b> Write one MC task and one generative task from scratch in lm-eval. Run them with <code>hf</code> and <code>vllm</code>, diff the logged samples, and explain every difference.</li>
+<li><b>Week 2: statistics.</b> Using <code>--log_samples</code> from two of your checkpoints, compute paired bootstrap CIs per task and for the overall score. Find out which of your dashboard's deltas survive.</li>
+<li><b>Week 3: sensitivity.</b> Rerun MMLU-DE with 3 prompt formats × MC/RC. Measure the spread, and compare it with the gaps between models.</li>
+<li><b>Week 4: judges.</b> Label 100 Arena-Hard-style pairs yourself and measure κ for your judge model, the position bias and the length correlation.</li>
+<li><b>Ongoing:</b> follow new benchmark releases and their contamination status; read leaderboard methodology changes (the HF Open LLM Leaderboard v2 write-up is a good example).</li>
+</ol>
+
+<h3>Reading list</h3>
+<ul>
+<li>EleutherAI lm-evaluation-harness docs: <i>task_guide.md</i>, <i>new_task_guide.md</i>, <i>interface.md</i></li>
+<li>Biderman et al. (2024), <i>Lessons from the Trenches on Reproducible Evaluation of Language Models</i></li>
+<li>Gu et al. (2024), <i>OLMES: A Standard for Language Model Evaluations</i></li>
+<li>Miller (2024), <i>Adding Error Bars to Evals: A Statistical Approach to Language Model Evaluations</i></li>
+<li>Liang et al. (2022), <i>HELM: Holistic Evaluation of Language Models</i></li>
+<li>Zheng et al. (2023), <i>Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena</i></li>
+<li>Dubois et al. (2024), <i>Length-Controlled AlpacaEval</i>; Li et al. (2024), <i>Arena-Hard / BenchBuilder</i></li>
+<li>Chen et al. (2021), <i>Codex / HumanEval</i> (pass@k estimator)</li>
+<li>Zhou et al. (2023), <i>IFEval</i>; Patil et al., <i>Berkeley Function Calling Leaderboard</i></li>
+<li>Sainz et al. (2023), <i>NLP Evaluation in Trouble: data contamination</i>; Mirzadeh et al. (2024), <i>GSM-Symbolic</i></li>
+<li>Sclar et al. (2023), <i>Quantifying LMs' sensitivity to spurious features in prompt design</i></li>
+<li>Magnusson et al. (2025), <i>DataDecide</i> (signal-to-noise for selecting benchmarks)</li>
+</ul>
+</section>
+
+<!-- ============================================================ 16 -->
+<section id="s16">
+<h2><span class="num">16</span>Glossary</h2>
+<dl class="gloss">
+<dt>acc_norm</dt><dd>Accuracy using log-probability normalised by the character length of each choice.</dd>
+<dt>avg@k</dt><dd>Mean accuracy over k sampled rollouts per item.</dd>
+<dt>Bits-per-byte (BPB)</dt><dd>Negative log-likelihood normalised per UTF-8 byte; comparable across tokenizers.</dd>
+<dt>Cloze / RC formulation</dt><dd>Scoring the answer text itself without listing the options.</dd>
+<dt>Contamination</dt><dd>Test items present in the training data.</dd>
+<dt>Filter</dt><dd>lm-eval post-processing that turns raw generations into answers (regex, take_first, majority_vote).</dd>
+<dt>LC win rate</dt><dd>Win rate against a baseline with the effect of response length regressed out.</dd>
+<dt>MDE</dt><dd>Minimum detectable effect: the smallest true difference a test reliably detects (≈ 2.8 · SE at 80% power).</dd>
+<dt>OPSD</dt><dd>On-policy self-distillation: a post-training stage in our pipeline.</dd>
+<dt>Paired test</dt><dd>A comparison using per-item differences between two models on the same items.</dd>
+<dt>pass@k</dt><dd>Probability that at least one of k samples is correct (unbiased estimator by Chen et al.).</dd>
+<dt>RLVR</dt><dd>Reinforcement learning with verifiable rewards (unit tests, maths checkers).</dd>
+<dt>Soup</dt><dd>A weighted average of model weights from several checkpoints.</dd>
+<dt>Strict vs flexible match</dt><dd>Extraction that requires the prescribed answer format vs extraction of the last plausible answer.</dd>
+</dl>
+<p style="color:var(--muted);font-size:13px;margin-top:40px">Adapted from a field guide originally written for our internal eval stack — an lm-evaluation-harness suite runner and a post-training results dashboard. Internal paths, hosts and names have been left out on purpose; every pitfall in here is one we actually hit.</p>
+</section>
+</main>
+
+<script>
+(function(){
+  // CI calculator
+  const pEl = document.getElementById('ci_p'), nEl = document.getElementById('ci_n');
+  function ci(){
+    const p = Math.min(1, Math.max(0, parseFloat(pEl.value) || 0)), n = Math.max(1, parseInt(nEl.value) || 1);
+    const se = Math.sqrt(p * (1 - p) / n), h = 1.96 * se;
+    // Wilson interval (better near 0/1 and for small n)
+    const z = 1.96, den = 1 + z*z/n, c = (p + z*z/(2*n)) / den, w = z * Math.sqrt(p*(1-p)/n + z*z/(4*n*n)) / den;
+    const lo = Math.max(0, c - w), hi = Math.min(1, c + w);
+    document.getElementById('ci_out').innerHTML =
+      `SE = <b>${(se*100).toFixed(2)} pp</b><br>Normal 95% CI: ${((p-h)*100).toFixed(1)}% – ${((p+h)*100).toFixed(1)}%  (±${(h*100).toFixed(1)} pp)<br>` +
+      `Wilson 95% CI: ${(lo*100).toFixed(1)}% – ${(hi*100).toFixed(1)}%<br>` +
+      `Two independent models need a gap of ≈ <b>${(2.8*Math.sqrt(2)*se*100).toFixed(1)} pp</b> to be detectable (unpaired, 80% power)`;
+    const bar = document.getElementById('ci_bar');
+    bar.querySelector('span').style.left = (lo*100) + '%'; bar.querySelector('span').style.width = ((hi-lo)*100) + '%';
+    bar.querySelector('i').style.left = (p*100) + '%';
+  }
+  pEl.addEventListener('input', ci); nEl.addEventListener('input', ci); ci();
+
+  // pass@k calculator
+  const N = document.getElementById('pk_n'), C = document.getElementById('pk_c'), K = document.getElementById('pk_k');
+  function passk(){
+    const n = parseInt(N.value)||0, c = parseInt(C.value)||0, k = parseInt(K.value)||0, out = document.getElementById('pk_out');
+    if (n < 1 || k < 1 || c < 0 || c > n || k > n){ out.textContent = 'Need 0 ≤ c ≤ n and 1 ≤ k ≤ n.'; return; }
+    let v;
+    if (n - c < k) v = 1; else { let prod = 1; for (let i = n - c + 1; i <= n; i++) prod *= (1 - k / i); v = 1 - prod; }
+    const naive = 1 - Math.pow(1 - c/n, k);
+    out.innerHTML = `unbiased pass@${k} = <b>${(v*100).toFixed(1)}%</b> &nbsp;·&nbsp; pass@1 = ${(c/n*100).toFixed(1)}%<br>` +
+      `<span style="color:var(--muted)">naive 1−(1−c/n)^k = ${(naive*100).toFixed(1)}% (biased when n is small)</span>`;
+  }
+  [N,C,K].forEach(e => e.addEventListener('input', passk)); passk();
+})();
+</script>
+</body>
+</html>

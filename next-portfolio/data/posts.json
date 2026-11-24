@@ -1,6 +1,20 @@
 {
-  "generatedAt": "2026-10-29T10:23:18.088Z",
+  "generatedAt": "2026-11-24T15:40:23.136Z",
   "posts": [
+    {
+      "slug": "llm-eval-tutorial",
+      "title": "LLM Evaluation: A Field Guide",
+      "date": "2026-11-24",
+      "tags": [
+        "Machine Learning",
+        "LLM",
+        "Evaluation",
+        "Statistics"
+      ],
+      "excerpt": "How to run, read, and argue about LLM evaluations — request types, metrics, judges, error bars, and the pitfalls that silently change scores. Includes interactive confidence-interval and pass@k calculators.",
+      "author": "Anirban Bhowmick",
+      "url": "/posts/llm-eval-tutorial.html"
+    },
     {
       "slug": "llm-inference-beginners-guide",
       "title": "LLM Inference: A Beginner’s Guide",
